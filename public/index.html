@@ -1,20 +1,59 @@
 <!DOCTYPE html>
 <html>
-<body style="background: transparent; font-family: sans-serif; color: white;">
-    <div id="scoreboard" style="display: flex; gap: 20px; font-size: 50px; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 10px; width: fit-content;">
-        <div>LOCAL: <span id="home">0</span></div>
-        <div>VISITANTE: <span id="away">0</span></div>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { background: transparent; color: white; font-family: 'Orbitron', sans-serif; }
+        .scoreboard { 
+            display: flex; background: rgba(0,0,0,0.8); border-bottom: 4px solid #f39c12;
+            padding: 15px; width: fit-content; border-radius: 0 0 10px 10px;
+        }
+        .team { padding: 0 20px; text-align: center; }
+        .score { font-size: 48px; color: #f1c40f; }
+        .timer { font-size: 32px; border-left: 2px solid #555; padding-left: 20px; min-width: 100px; color: #e74c3c; }
+        .sets { font-size: 14px; color: #aaa; }
+    </style>
+</head>
+<body>
+    <div id="ui" class="scoreboard">
+        <div class="team">
+            <div id="name-h">LOCAL</div>
+            <div id="score-h" class="score">0</div>
+            <div id="sets-h" class="sets"></div>
+        </div>
+        <div class="team">
+            <div id="name-a">VISITA</div>
+            <div id="score-a" class="score">0</div>
+            <div id="sets-a" class="sets"></div>
+        </div>
+        <div class="timer" id="timer">00:00</div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        socket.on('init', (data) => updateUI(data));
-        socket.on('scoreUpdated', (data) => updateUI(data));
+        socket.on('update', s => render(s));
+        socket.on('tick', d => document.getElementById('timer').innerText = formatTime(d.timer));
 
-        function updateUI(data) {
-            document.getElementById('home').innerText = data.home;
-            document.getElementById('away').innerText = data.away;
+        function render(s) {
+            document.getElementById('score-h').innerText = s.homeScore;
+            document.getElementById('score-a').innerText = s.awayScore;
+            document.getElementById('timer').innerText = formatTime(s.timer);
+            
+            // Si es voley, mostrar sets
+            if(s.sport === 'volleyball') {
+                document.getElementById('sets-h').innerText = `SETS: ${s.homeSets}`;
+                document.getElementById('sets-a').innerText = `SETS: ${s.awaySets}`;
+            } else {
+                document.getElementById('sets-h').innerText = '';
+                document.getElementById('sets-a').innerText = '';
+            }
+        }
+
+        function formatTime(s) {
+            const mins = Math.floor(s / 60).toString().padStart(2, '0');
+            const secs = (s % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
         }
     </script>
 </body>
