@@ -1,25 +1,46 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const path = require('path');
-
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(express.static('public'));
 
-let gameState = { home: 0, away: 0, period: 1 };
+// Estado inicial robusto
+let state = {
+    sport: 'football',
+    homeScore: 0,
+    awayScore: 0,
+    homeSets: 0, // Para voley
+    awaySets: 0, // Para voley
+    timer: 0,    // Segundos
+    isRunning: false
+};
+
+// Lógica del Cronómetro en el servidor
+setInterval(() => {
+    if (state.isRunning) {
+        state.timer++;
+        io.emit('tick', { timer: state.timer });
+    }
+}, 1000);
 
 io.on('connection', (socket) => {
-    // Enviar estado actual al conectar
-    socket.emit('init', gameState);
+    socket.emit('init', state);
 
-    socket.on('updateScore', (data) => {
-        gameState = { ...gameState, ...data };
-        io.emit('scoreUpdated', gameState); // Avisa a todos (OBS y móvil)
+    socket.on('updateAction', (data) => {
+        state = { ...state, ...data };
+        io.emit('update', state);
+    });
+
+    socket.on('controlTimer', (command) => {
+        if (command === 'start') state.isRunning = true;
+        if (command === 'pause') state.isRunning = false;
+        if (command === 'reset') { state.timer = 0; state.isRunning = false; }
+        io.emit('update', state);
     });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
+server.listen(PORT, () => console.log(`Servidor listo en puerto ${PORT}`));
