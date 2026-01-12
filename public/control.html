@@ -96,6 +96,24 @@
             document.getElementById('sets-h-ctrl').classList.toggle('d-none', !isVoley);
             document.getElementById('sets-a-ctrl').classList.toggle('d-none', !isVoley);
         }
+
+        
     </script>
+    <div class="mt-3">
+    <label>Color Equipo:</label>
+    <input type="color" id="color-h" onchange="updateColors()" class="form-control form-control-color">
+    <label class="mt-2">URL Logo:</label>
+    <input type="text" id="logo-h" placeholder="URL del logo" class="form-control" onchange="updateColors()">
+</div>
+
+<script>
+function updateColors() {
+    state.homeColor = document.getElementById('color-h').value;
+    state.awayColor = document.getElementById('color-a').value; // Repetir para visita
+    state.homeLogo = document.getElementById('logo-h').value;
+    socket.emit('updateAction', state);
+}
+</script>
 </body>
 </html>
+
