@@ -7,18 +7,16 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(express.static('public'));
 
-// Estado inicial robusto
 let state = {
     sport: 'football',
     homeScore: 0,
     awayScore: 0,
-    homeSets: 0, // Para voley
-    awaySets: 0, // Para voley
-    timer: 0,    // Segundos
+    homeSets: 0,
+    awaySets: 0,
+    timer: 0,
     isRunning: false
 };
 
-// Lógica del Cronómetro en el servidor
 setInterval(() => {
     if (state.isRunning) {
         state.timer++;
@@ -43,4 +41,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Servidor listo en puerto ${PORT}`));
+server.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
