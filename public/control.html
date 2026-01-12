@@ -3,94 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Marcador</title>
+    <title>Controlador Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #1a1a1a; color: white; display: flex; height: 100vh; }
-        .sidebar { width: 200px; background: #000; padding: 20px; border-right: 1px solid #333; }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-        .card { background: #2a2a2a; border: none; color: white; margin-bottom: 20px; }
-        .btn-score { font-size: 1.5rem; padding: 15px; }
-        .timer-display { font-family: monospace; font-size: 3rem; color: #00ff00; }
+        body { background: #121212; color: white; display: flex; height: 100vh; margin: 0; }
+        .sidebar { width: 220px; background: #1e1e1e; padding: 20px; border-right: 2px solid #333; }
+        .main { flex: 1; padding: 30px; }
+        .card { background: #252525; border: none; color: white; margin-bottom: 15px; }
+        .timer-val { font-family: monospace; font-size: 3.5rem; color: #00ffcc; text-align: center; }
+        .btn-inc { padding: 15px; font-size: 1.2rem; }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h4>Deportes</h4>
-        <button class="btn btn-outline-primary w-100 mb-2" onclick="setSport('football')">⚽ Fútbol</button>
-        <button class="btn btn-outline-primary w-100 mb-2" onclick="setSport('volleyball')">🏐 Voley</button>
+        <h4 class="mb-4">Deportes</h4>
+        <button class="btn btn-outline-primary w-100 mb-3" onclick="setSport('football')">⚽ Fútbol</button>
+        <button class="btn btn-outline-info w-100 mb-3" onclick="setSport('volleyball')">🏐 Voleibol</button>
+        <hr>
+        <h5>Reloj</h5>
+        <button class="btn btn-success w-100 mb-2" onclick="timer('start')">Iniciar</button>
+        <button class="btn btn-warning w-100 mb-2" onclick="timer('pause')">Pausar</button>
+        <button class="btn btn-danger w-100" onclick="timer('reset')">Reset</button>
     </div>
 
-    <div class="main-content">
-        <h2 id="sport-title">Fútbol</h2>
-        <div class="timer-display mb-3" id="timer">00:00</div>
-        
+    <div class="main">
+        <h2 id="title">Cargando...</h2>
+        <div class="timer-val mb-4" id="timer-display">00:00</div>
+
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-6">
                 <div class="card p-3 text-center">
                     <h5>LOCAL</h5>
-                    <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-success btn-score" onclick="modify('homeScore', 1)">+1</button>
-                        <button class="btn btn-danger" onclick="modify('homeScore', -1)">-1</button>
+                    <button class="btn btn-primary btn-inc mb-2" onclick="modify('homeScore', 1)">+1 Punto</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="modify('homeScore', -1)">-1 Punto</button>
+                    
+                    <div id="sets-h-ctrl" class="mt-3 d-none">
+                        <h6>Sets</h6>
+                        <button class="btn btn-info w-100 mb-1" onclick="modify('homeSets', 1)">+1 Set</button>
+                        <button class="btn btn-outline-danger btn-sm w-100" onclick="modify('homeSets', -1)">-1 Set</button>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-6">
                 <div class="card p-3 text-center">
-                    <h5>VISITANTE</h5>
-                    <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-success btn-score" onclick="modify('awayScore', 1)">+1</button>
-                        <button class="btn btn-danger" onclick="modify('awayScore', -1)">-1</button>
+                    <h5>VISITA</h5>
+                    <button class="btn btn-primary btn-inc mb-2" onclick="modify('awayScore', 1)">+1 Punto</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="modify('awayScore', -1)">-1 Punto</button>
+
+                    <div id="sets-a-ctrl" class="mt-3 d-none">
+                        <h6>Sets</h6>
+                        <button class="btn btn-info w-100 mb-1" onclick="modify('awaySets', 1)">+1 Set</button>
+                        <button class="btn btn-outline-danger btn-sm w-100" onclick="modify('awaySets', -1)">-1 Set</button>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div id="voley-extras" class="row d-none">
-            <div class="col-md-6 text-center"><button class="btn btn-info w-100" onclick="modify('homeSets', 1)">Ganar Set Local</button></div>
-            <div class="col-md-6 text-center"><button class="btn btn-info w-100" onclick="modify('awaySets', 1)">Ganar Set Visita</button></div>
-        </div>
-
-        <div class="mt-4">
-            <button class="btn btn-warning" onclick="timer('start')">INICIAR RELOJ</button>
-            <button class="btn btn-secondary" onclick="timer('pause')">PAUSAR</button>
-            <button class="btn btn-danger" onclick="timer('reset')">RESETEAR PARTIDO</button>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let localState = {};
+        let state = {};
 
-        socket.on('init', s => { localState = s; render(); });
-        socket.on('update', s => { localState = s; render(); });
+        socket.on('init', s => { state = s; updateUI(); });
+        socket.on('update', s => { state = s; updateUI(); });
         socket.on('tick', d => { 
-            localState.timer = d.timer; 
-            document.getElementById('timer').innerText = formatTime(d.timer); 
+            state.timer = d.timer; 
+            document.getElementById('timer-display').innerText = format(d.timer); 
         });
 
-        function modify(field, value) {
-            localState[field] = Math.max(0, localState[field] + value);
-            socket.emit('updateAction', localState);
+        function modify(key, val) {
+            state[key] = Math.max(0, state[key] + val);
+            socket.emit('updateAction', state);
         }
 
         function setSport(s) {
-            localState.sport = s;
-            socket.emit('updateAction', localState);
+            state.sport = s;
+            state.homeScore = 0; state.awayScore = 0;
+            state.homeSets = 0; state.awaySets = 0;
+            socket.emit('updateAction', state);
         }
 
         function timer(cmd) { socket.emit('controlTimer', cmd); }
 
-        function formatTime(s) {
-            const mins = Math.floor(s / 60).toString().padStart(2, '0');
-            const secs = (s % 60).toString().padStart(2, '0');
-            return `${mins}:${secs}`;
+        function format(s) {
+            return Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0');
         }
 
-        function render() {
-            document.getElementById('sport-title').innerText = localState.sport.toUpperCase();
-            document.getElementById('voley-extras').classList.toggle('d-none', localState.sport !== 'volleyball');
+        function updateUI() {
+            document.getElementById('title').innerText = state.sport.toUpperCase();
+            const isVoley = state.sport === 'volleyball';
+            document.getElementById('sets-h-ctrl').classList.toggle('d-none', !isVoley);
+            document.getElementById('sets-a-ctrl').classList.toggle('d-none', !isVoley);
         }
     </script>
 </body>
