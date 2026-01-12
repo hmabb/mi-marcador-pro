@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="text-align: center; font-family: sans-serif; padding: 20px;">
+    <h1>Controlador</h1>
+    <button onclick="change(1, 0)" style="padding: 20px; font-size: 20px;">+1 Local</button>
+    <button onclick="change(0, 1)" style="padding: 20px; font-size: 20px;">+1 Visita</button>
+    <br><br>
+    <button onclick="reset()" style="color: red;">Resetear</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let current = { home: 0, away: 0 };
+        socket.on('init', data => current = data);
+        socket.on('scoreUpdated', data => current = data);
+
+        function change(h, a) {
+            socket.emit('updateScore', { home: current.home + h, away: current.away + a });
+        }
+        function reset() { socket.emit('updateScore', { home: 0, away: 0 }); }
+    </script>
+</body>
+</html>

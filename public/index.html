@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body style="background: transparent; font-family: sans-serif; color: white;">
+    <div id="scoreboard" style="display: flex; gap: 20px; font-size: 50px; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 10px; width: fit-content;">
+        <div>LOCAL: <span id="home">0</span></div>
+        <div>VISITANTE: <span id="away">0</span></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on('init', (data) => updateUI(data));
+        socket.on('scoreUpdated', (data) => updateUI(data));
+
+        function updateUI(data) {
+            document.getElementById('home').innerText = data.home;
+            document.getElementById('away').innerText = data.away;
+        }
+    </script>
+</body>
+</html>
