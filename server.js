@@ -9,19 +9,17 @@ app.use(express.static('public'));
 
 let state = {
     sport: 'volleyball',
+    tournamentName: 'VOLLEYBALL CHAMPIONSHIP',
     homeName: 'LOCAL',
     awayName: 'VISITA',
     homeColor: '#36ba98',
     awayColor: '#a044ff',
     homeLogo: '',
     awayLogo: '',
-    // Puntos del set actual
     homeScore: 0,
     awayScore: 0,
-    // Historial de sets (para mostrar solo los jugados)
     homeSetsHistory: [], // Ej: [25, 25]
     awaySetsHistory: [], // Ej: [12, 20]
-    currentSetNum: 1,
     timer: 0,
     isRunning: false
 };
@@ -49,5 +47,3 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
-
-
