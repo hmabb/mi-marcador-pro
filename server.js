@@ -42,3 +42,16 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+
+let state = {
+    sport: 'football',
+    homeScore: 0, awayScore: 0,
+    homeSets: 0, awaySets: 0,
+    homeColor: '#ed1c24', // Color por defecto
+    awayColor: '#0055aa',
+    homeLogo: '', // URL de la imagen
+    awayLogo: '',
+    timer: 0,
+    isRunning: false
+};
+
