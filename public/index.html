@@ -1,86 +1,192 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
     <style>
-        body { background: transparent; margin: 0; padding: 20px; font-family: 'Orbitron', sans-serif; color: white; }
-        
-        /* CONTENEDOR MAESTRO */
-        .wrapper { display: inline-grid; gap: 5px; }
+        :root {
+            --color-home: #36ba98; /* Verde del prototipo */
+            --color-away: #a044ff; /* Morado del prototipo */
+            --bg-dark: #121e31;    /* Azul oscuro inferior */
+        }
 
-        /* ESTILO FÚTBOL (Horizontal clásico) */
-        .theme-football .wrapper {
-            grid-template-areas: "h score timer a";
-            background: rgba(0,0,0,0.85);
-            padding: 10px 25px;
-            border-left: 8px solid #ed1c24;
+        body {
+            background: transparent;
+            margin: 0;
+            padding: 50px;
+            font-family: 'Roboto', sans-serif;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        /* Contenedor Principal */
+        .voley-scoreboard {
+            display: flex;
+            flex-direction: column;
+            width: 700px; /* Ajustable */
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+        }
+
+        /* Filas de Equipos */
+        .team-row {
+            display: flex;
+            height: 50px;
             align-items: center;
+            margin-bottom: 2px;
         }
 
-        /* ESTILO VOLEIBOL (Cronómetro abajo, puntos a la derecha) */
-        .theme-volleyball .wrapper {
-            grid-template-areas: 
-                "h h-score"
-                "a a-score"
-                "timer timer";
-            background: rgba(0, 40, 120, 0.9);
-            padding: 15px;
-            border: 3px solid white;
-            border-radius: 10px;
+        .team-info {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 22px;
+            letter-spacing: 1px;
         }
 
-        /* ASIGNACIÓN DE ÁREAS */
-        .name-h { grid-area: h; font-size: 24px; padding-right: 15px; }
-        .score-h { grid-area: h-score; font-size: 32px; color: #f1c40f; text-align: right; }
-        .name-a { grid-area: a; font-size: 24px; padding-right: 15px; }
-        .score-a { grid-area: a-score; font-size: 32px; color: #f1c40f; text-align: right; }
-        .timer { grid-area: timer; font-size: 28px; color: #00ffcc; text-align: center; border-top: 1px solid #555; margin-top: 5px; }
+        .home-bg { background: var(--color-home); }
+        .away-bg { background: var(--color-away); }
 
-        /* Ajustes específicos para Fútbol en las áreas */
-        .theme-football .score-h { grid-area: score; margin-right: 10px; }
-        .theme-football .score-a { grid-area: a; margin-left: 10px; }
-        .theme-football .timer { border: none; margin: 0; padding: 0 15px; border-left: 2px solid #444; }
-        
-        .set-label { font-size: 14px; color: #aaa; margin-left: 10px; }
+        .logo-placeholder {
+            width: 35px;
+            height: 35px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        /* Celdas de Puntos (Derecha) */
+        .score-cells {
+            display: flex;
+            height: 100%;
+            background: #0d1626;
+        }
+
+        .cell {
+            width: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* La celda del punto actual es más brillante */
+        .current-points {
+            background: #1a2a44;
+            color: #ffffff;
+            width: 70px;
+            font-size: 30px;
+        }
+
+        /* Barra Inferior */
+        .bottom-bar {
+            background: var(--bg-dark);
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #e0e0e0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Icono de saque (Balón amarillo) */
+        .service-indicator {
+            width: 20px;
+            height: 20px;
+            background: #ffd700;
+            border-radius: 50%;
+            margin-left: auto;
+            box-shadow: 0 0 10px #ffd700;
+        }
     </style>
 </head>
 <body>
-    <div id="container" class="theme-football">
-        <div class="wrapper">
-            <div class="name-h"><span id="txt-h">LOCAL</span><span id="set-h" class="set-label"></span></div>
-            <div class="score-h" id="val-h">0</div>
-            
-            <div class="name-a"><span id="txt-a">VISITA</span><span id="set-a" class="set-label"></span></div>
-            <div class="score-a" id="val-a">0</div>
-            
-            <div class="timer" id="timer">00:00</div>
+
+    <div class="voley-scoreboard" id="board">
+        <div class="team-row">
+            <div class="team-info home-bg" id="bg-h">
+                <div class="logo-placeholder">
+                    <img id="img-h" src="" class="logo-img" style="display:none">
+                </div>
+                <span id="name-h">USA</span>
+            </div>
+            <div class="score-cells">
+                <div class="cell" id="sets-h-prev">0</div> <div class="cell" id="sets-h">0</div>      <div class="cell current-points" id="pts-h">0</div> </div>
+        </div>
+
+        <div class="team-row">
+            <div class="team-info away-bg" id="bg-a">
+                <div class="logo-placeholder">
+                    <img id="img-a" src="" class="logo-img" style="display:none">
+                </div>
+                <span id="name-a">ENGLAND</span>
+                <div class="service-indicator" id="serve-a" style="display:none"></div>
+            </div>
+            <div class="score-cells">
+                <div class="cell" id="sets-a-prev">0</div>
+                <div class="cell" id="sets-a">0</div>
+                <div class="cell current-points" id="pts-a">0</div>
+            </div>
+        </div>
+
+        <div class="bottom-bar">
+            <span id="tournament-name">VOLLEYBALL CHAMPIONSHIP</span>
+            <span style="margin: 0 15px;">|</span>
+            <span id="timer">00:00</span>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+
         socket.on('update', s => {
-            document.getElementById('container').className = 'theme-' + s.sport;
-            document.getElementById('val-h').innerText = s.homeScore;
-            document.getElementById('val-a').innerText = s.awayScore;
-            document.getElementById('timer').innerText = format(s.timer);
-            
-            if(s.sport === 'volleyball') {
-                document.getElementById('set-h').innerText = `(S:${s.homeSets})`;
-                document.getElementById('set-a').innerText = `(S:${s.awaySets})`;
-            } else {
-                document.getElementById('set-h').innerText = '';
-                document.getElementById('set-a').innerText = '';
+            // Nombres y Puntos
+            document.getElementById('pts-h').innerText = s.homeScore;
+            document.getElementById('pts-a').innerText = s.awayScore;
+            document.getElementById('sets-h').innerText = s.homeSets;
+            document.getElementById('sets-a').innerText = s.awaySets;
+
+            // Colores Dinámicos
+            document.getElementById('bg-h').style.backgroundColor = s.homeColor || '#36ba98';
+            document.getElementById('bg-a').style.backgroundColor = s.awayColor || '#a044ff';
+
+            // Logos Dinámicos
+            if(s.homeLogo) {
+                document.getElementById('img-h').src = s.homeLogo;
+                document.getElementById('img-h').style.display = 'block';
             }
+            if(s.awayLogo) {
+                document.getElementById('img-a').src = s.awayLogo;
+                document.getElementById('img-a').style.display = 'block';
+            }
+
+            // Formato de tiempo
+            document.getElementById('timer').innerText = formatTime(s.timer);
         });
 
-        socket.on('tick', d => document.getElementById('timer').innerText = format(d.timer));
+        socket.on('tick', d => {
+            document.getElementById('timer').innerText = formatTime(d.timer);
+        });
 
-        function format(s) {
-            return Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0');
+        function formatTime(s) {
+            const m = Math.floor(s/60).toString().padStart(2,'0');
+            const sec = (s%60).toString().padStart(2,'0');
+            return `${m}:${sec}`;
         }
     </script>
 </body>
 </html>
+
 
