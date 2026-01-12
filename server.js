@@ -7,17 +7,21 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(express.static('public'));
 
-// ÚNICA DECLARACIÓN DE STATE EN TODO EL ARCHIVO
 let state = {
-    sport: 'football',
-    homeScore: 0,
-    awayScore: 0,
-    homeSets: 0,
-    awaySets: 0,
+    sport: 'volleyball',
+    homeName: 'LOCAL',
+    awayName: 'VISITA',
     homeColor: '#36ba98',
     awayColor: '#a044ff',
     homeLogo: '',
     awayLogo: '',
+    // Puntos del set actual
+    homeScore: 0,
+    awayScore: 0,
+    // Historial de sets (para mostrar solo los jugados)
+    homeSetsHistory: [], // Ej: [25, 25]
+    awaySetsHistory: [], // Ej: [12, 20]
+    currentSetNum: 1,
     timer: 0,
     isRunning: false
 };
@@ -31,21 +35,19 @@ setInterval(() => {
 
 io.on('connection', (socket) => {
     socket.emit('init', state);
-
     socket.on('updateAction', (data) => {
         state = { ...state, ...data };
         io.emit('update', state);
     });
-
-    socket.on('controlTimer', (command) => {
-        if (command === 'start') state.isRunning = true;
-        if (command === 'pause') state.isRunning = false;
-        if (command === 'reset') { state.timer = 0; state.isRunning = false; }
+    socket.on('controlTimer', (cmd) => {
+        if (cmd === 'start') state.isRunning = true;
+        if (cmd === 'pause') state.isRunning = false;
+        if (cmd === 'reset') { state.timer = 0; state.isRunning = false; }
         io.emit('update', state);
     });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+server.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
 
 
