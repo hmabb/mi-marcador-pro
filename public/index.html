@@ -4,9 +4,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
     <style>
         body { background: transparent; margin: 0; padding: 20px; font-family: 'Roboto', sans-serif; color: white; text-transform: uppercase; overflow: hidden; }
-        .board { display: flex; flex-direction: column; width: fit-content; min-width: 600px; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5)); }
+        .board { display: flex; flex-direction: column; width: fit-content; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5)); }
         .row { display: flex; height: 55px; margin-bottom: 2px; align-items: center; }
-        .info { flex: 1; min-width: 300px; display: flex; align-items: center; padding: 0 20px; font-size: 24px; transition: background 0.5s; }
+        .info { flex: 1; min-width: 320px; display: flex; align-items: center; padding: 0 20px; font-size: 24px; transition: 0.3s; }
         .logo { width: 38px; height: 38px; margin-right: 15px; object-fit: contain; }
         .sets-area { display: flex; background: #0b1422; height: 100%; }
         .set-box { width: 55px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-left: 1px solid rgba(255,255,255,0.1); color: #ccc; }
@@ -39,20 +39,27 @@
             document.getElementById('txt-tournament').innerText = s.tournamentName;
             document.getElementById('txt-h').innerText = s.homeName;
             document.getElementById('txt-a').innerText = s.awayName;
-            document.getElementById('bg-h').style.backgroundColor = s.homeColor;
-            document.getElementById('bg-a').style.backgroundColor = s.awayColor;
+            
+            // Colores de Fondo y Texto
+            const infoH = document.getElementById('bg-h');
+            infoH.style.backgroundColor = s.homeColor;
+            infoH.style.color = s.homeTextColor;
+
+            const infoA = document.getElementById('bg-a');
+            infoA.style.backgroundColor = s.awayColor;
+            infoA.style.color = s.awayTextColor;
+
             document.getElementById('pts-h').innerText = s.homeScore;
             document.getElementById('pts-a').innerText = s.awayScore;
             
-            // Logos
             if(s.homeLogo) { document.getElementById('logo-h').src = s.homeLogo; document.getElementById('logo-h').style.display='block'; }
             else document.getElementById('logo-h').style.display='none';
             if(s.awayLogo) { document.getElementById('logo-a').src = s.awayLogo; document.getElementById('logo-a').style.display='block'; }
             else document.getElementById('logo-a').style.display='none';
 
-            // Dibujar historial
             renderHistory(s.homeSetsHistory, 'sets-h-row');
             renderHistory(s.awaySetsHistory, 'sets-a-row');
+            if(!s.isRunning) document.getElementById('timer').innerText = format(s.timer);
         });
 
         socket.on('tick', d => document.getElementById('timer').innerText = format(d.timer));
