@@ -4,25 +4,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
     <style>
         body { background: transparent; margin: 0; padding: 20px; font-family: 'Roboto', sans-serif; color: white; text-transform: uppercase; overflow: hidden; }
-        .board { display: flex; flex-direction: column; width: fit-content; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5)); }
+        .board { display: flex; flex-direction: column; width: fit-content; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.6)); }
         .row { display: flex; height: 55px; margin-bottom: 2px; align-items: center; }
-        .info { flex: 1; min-width: 320px; display: flex; align-items: center; padding: 0 20px; font-size: 24px; transition: 0.3s; }
+        .info { flex: 1; min-width: 320px; display: flex; align-items: center; padding: 0 20px; font-size: 24px; transition: 0.4s; position: relative; }
         .logo { width: 38px; height: 38px; margin-right: 15px; object-fit: contain; }
         .sets-area { display: flex; background: #0b1422; height: 100%; }
-        .set-box { width: 55px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-left: 1px solid rgba(255,255,255,0.1); color: #ccc; }
+        .set-box { width: 55px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-left: 1px solid rgba(255,255,255,0.1); color: #bbb; }
         .current { width: 75px; background: #1a2a44; color: #fff; font-size: 34px; font-weight: bold; border-left: 2px solid rgba(255,255,255,0.2); }
         .footer { background: #0b1422; height: 38px; display: flex; align-items: center; padding: 0 20px; font-size: 16px; border-top: 1px solid #333; justify-content: space-between; }
+        
+        /* Icono de Saque */
+        .ball-icon { font-size: 20px; margin-left: auto; display: none; filter: drop-shadow(0 0 5px gold); }
+        .serving .ball-icon { display: block; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
     </style>
 </head>
 <body>
     <div class="board">
-        <div class="row">
-            <div class="info" id="bg-h"><img id="logo-h" class="logo"><span id="txt-h"></span></div>
+        <div class="row" id="row-h">
+            <div class="info" id="bg-h">
+                <img id="logo-h" class="logo">
+                <span id="txt-h"></span>
+                <span class="ball-icon">🏐</span>
+            </div>
             <div class="sets-area" id="sets-h-row"></div>
             <div class="set-box current" id="pts-h">0</div>
         </div>
-        <div class="row">
-            <div class="info" id="bg-a"><img id="logo-a" class="logo"><span id="txt-a"></span></div>
+        <div class="row" id="row-a">
+            <div class="info" id="bg-a">
+                <img id="logo-a" class="logo">
+                <span id="txt-a"></span>
+                <span class="ball-icon">🏐</span>
+            </div>
             <div class="sets-area" id="sets-a-row"></div>
             <div class="set-box current" id="pts-a">0</div>
         </div>
@@ -40,22 +53,27 @@
             document.getElementById('txt-h').innerText = s.homeName;
             document.getElementById('txt-a').innerText = s.awayName;
             
-            // Colores de Fondo y Texto
+            // Colores y Saque Local
             const infoH = document.getElementById('bg-h');
             infoH.style.backgroundColor = s.homeColor;
             infoH.style.color = s.homeTextColor;
+            document.getElementById('row-h').className = (s.serverSide === 'home') ? 'row serving' : 'row';
 
+            // Colores y Saque Visita
             const infoA = document.getElementById('bg-a');
             infoA.style.backgroundColor = s.awayColor;
             infoA.style.color = s.awayTextColor;
+            document.getElementById('row-a').className = (s.serverSide === 'away') ? 'row serving' : 'row';
 
             document.getElementById('pts-h').innerText = s.homeScore;
             document.getElementById('pts-a').innerText = s.awayScore;
             
-            if(s.homeLogo) { document.getElementById('logo-h').src = s.homeLogo; document.getElementById('logo-h').style.display='block'; }
-            else document.getElementById('logo-h').style.display='none';
-            if(s.awayLogo) { document.getElementById('logo-a').src = s.awayLogo; document.getElementById('logo-a').style.display='block'; }
-            else document.getElementById('logo-a').style.display='none';
+            // Logos
+            const imgH = document.getElementById('logo-h');
+            if(s.homeLogo) { imgH.src = s.homeLogo; imgH.style.display='block'; } else imgH.style.display='none';
+            
+            const imgA = document.getElementById('logo-a');
+            if(s.awayLogo) { imgA.src = s.awayLogo; imgA.style.display='block'; } else imgA.style.display='none';
 
             renderHistory(s.homeSetsHistory, 'sets-h-row');
             renderHistory(s.awaySetsHistory, 'sets-a-row');
