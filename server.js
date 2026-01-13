@@ -14,12 +14,14 @@ let state = {
     awayName: 'VISITA',
     homeColor: '#36ba98',
     awayColor: '#a044ff',
+    homeTextColor: '#ffffff',
+    awayTextColor: '#ffffff',
     homeLogo: '',
     awayLogo: '',
     homeScore: 0,
     awayScore: 0,
-    homeSetsHistory: [], // Ej: [25, 25]
-    awaySetsHistory: [], // Ej: [12, 20]
+    homeSetsHistory: [],
+    awaySetsHistory: [],
     timer: 0,
     isRunning: false
 };
@@ -34,13 +36,14 @@ setInterval(() => {
 io.on('connection', (socket) => {
     socket.emit('init', state);
     socket.on('updateAction', (data) => {
-        state = { ...state, ...data };
+        const { timer, ...restOfData } = data; 
+        state = { ...state, ...restOfData };
         io.emit('update', state);
     });
     socket.on('controlTimer', (cmd) => {
         if (cmd === 'start') state.isRunning = true;
         if (cmd === 'pause') state.isRunning = false;
-        if (cmd === 'reset') { state.timer = 0; state.isRunning = false; }
+        if (cmd === 'reset') { state.timer = 0; state.isRunning = false; io.emit('tick', { timer: 0 }); }
         io.emit('update', state);
     });
 });
