@@ -3,69 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control Voley Pro</title>
+    <title>Panel Voley Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #121212; color: white; padding-bottom: 50px; }
         .module { background: #1e1e1e; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #444; }
-        .local-mod { border-color: #36ba98; }
-        .away-mod { border-color: #a044ff; }
-        .score-display { font-size: 2.5rem; font-weight: bold; background: #000; border-radius: 5px; margin: 10px 0; }
-        .timer-big { font-family: monospace; font-size: 3rem; color: #00ffcc; text-align: center; }
-        .set-edit-card { background: #2a2a2a; border-radius: 5px; padding: 10px; margin-top: 10px; }
+        .score-display { font-size: 3rem; font-weight: bold; background: #000; border-radius: 5px; margin: 10px 0; color: #f1c40f; }
+        .timer-big { font-family: monospace; font-size: 3.5rem; color: #00ffcc; text-align: center; line-height: 1; }
+        label { font-size: 0.8rem; color: #aaa; }
     </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 600px;">
+<div class="container" style="max-width: 500px;">
     <div class="module">
-        <input type="text" id="tournament-input" class="form-control bg-dark text-white mb-3" placeholder="Nombre del Torneo" onchange="sync()">
+        <input type="text" id="tournament-input" class="form-control bg-dark text-white mb-3" placeholder="Torneo" onchange="sync()">
         <div class="timer-big" id="timer-val">00:00</div>
-        <div class="d-flex gap-2 justify-content-center mt-2">
-            <button class="btn btn-success" onclick="timer('start')">INICIAR</button>
-            <button class="btn btn-warning" onclick="timer('pause')">PAUSA</button>
-            <button class="btn btn-danger" onclick="timer('reset')">RESET</button>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+            <button class="btn btn-success flex-fill" onclick="timer('start')">INICIAR</button>
+            <button class="btn btn-warning flex-fill" onclick="timer('pause')">PAUSA</button>
+            <button class="btn btn-danger flex-fill" onclick="timer('reset')">RESET</button>
         </div>
     </div>
 
-    <div class="module local-mod">
+    <div class="module" style="border-color: #36ba98;">
+        <input type="text" id="name-h" class="form-control bg-dark text-white mb-2" placeholder="Nombre Local" onchange="sync()">
         <div class="row g-2">
-            <div class="col-8"><input type="text" id="name-h" class="form-control bg-dark text-white" onchange="sync()"></div>
-            <div class="col-4"><input type="color" id="color-h" class="form-control form-control-color w-100" onchange="sync()"></div>
+            <div class="col-6"><label>Fondo</label><input type="color" id="color-h" class="form-control form-control-color w-100" onchange="sync()"></div>
+            <div class="col-6"><label>Texto</label><input type="color" id="text-h" class="form-control form-control-color w-100" onchange="sync()"></div>
         </div>
         <input type="text" id="logo-h" class="form-control bg-dark text-white mt-2" placeholder="URL Logo" onchange="sync()">
-        
         <div class="text-center">
             <div class="score-display" id="val-h">0</div>
             <div class="btn-group w-100">
-                <button class="btn btn-primary btn-lg" onclick="modify('homeScore', 1)">+ PUNTO</button>
+                <button class="btn btn-primary btn-lg" onclick="modify('homeScore', 1)">+1</button>
                 <button class="btn btn-outline-danger" onclick="modify('homeScore', -1)">-1</button>
             </div>
         </div>
     </div>
 
-    <div class="module away-mod">
+    <div class="module" style="border-color: #a044ff;">
+        <input type="text" id="name-a" class="form-control bg-dark text-white mb-2" placeholder="Nombre Visita" onchange="sync()">
         <div class="row g-2">
-            <div class="col-8"><input type="text" id="name-a" class="form-control bg-dark text-white" onchange="sync()"></div>
-            <div class="col-4"><input type="color" id="color-a" class="form-control form-control-color w-100" onchange="sync()"></div>
+            <div class="col-6"><label>Fondo</label><input type="color" id="color-a" class="form-control form-control-color w-100" onchange="sync()"></div>
+            <div class="col-6"><label>Texto</label><input type="color" id="text-a" class="form-control form-control-color w-100" onchange="sync()"></div>
         </div>
         <input type="text" id="logo-a" class="form-control bg-dark text-white mt-2" placeholder="URL Logo" onchange="sync()">
-        
         <div class="text-center">
             <div class="score-display" id="val-a">0</div>
             <div class="btn-group w-100">
-                <button class="btn btn-primary btn-lg" onclick="modify('awayScore', 1)">+ PUNTO</button>
+                <button class="btn btn-primary btn-lg" onclick="modify('awayScore', 1)">+1</button>
                 <button class="btn btn-outline-danger" onclick="modify('awayScore', -1)">-1</button>
             </div>
         </div>
     </div>
 
     <div class="module">
-        <h5>📊 GESTIÓN DE SETS</h5>
         <button class="btn btn-info w-100 mb-3" onclick="pushSet()">GUARDAR SET Y CONTINUAR</button>
-        
-        <div id="sets-history-list">
-            </div>
+        <div id="sets-history-list"></div>
     </div>
 </div>
 
@@ -86,59 +81,67 @@
         document.getElementById('val-a').innerText = state.awayScore;
         document.getElementById('color-h').value = state.homeColor;
         document.getElementById('color-a').value = state.awayColor;
+        document.getElementById('text-h').value = state.homeTextColor;
+        document.getElementById('text-a').value = state.awayTextColor;
         document.getElementById('logo-h').value = state.homeLogo;
         document.getElementById('logo-a').value = state.awayLogo;
 
-        // Renderizar historial de sets editables
         const list = document.getElementById('sets-history-list');
         list.innerHTML = '';
         state.homeSetsHistory.forEach((val, i) => {
             const div = document.createElement('div');
-            div.className = 'set-edit-card d-flex align-items-center gap-2 mb-2';
+            div.className = 'd-flex align-items-center gap-1 mb-2 bg-dark p-2 rounded';
             div.innerHTML = `
-                <span class="badge bg-secondary">SET ${i+1}</span>
-                <input type="number" class="form-control form-control-sm bg-dark text-white" value="${state.homeSetsHistory[i]}" onchange="editSet(${i}, 'home', this.value)">
-                <span>-</span>
-                <input type="number" class="form-control form-control-sm bg-dark text-white" value="${state.awaySetsHistory[i]}" onchange="editSet(${i}, 'away', this.value)">
-                <button class="btn btn-danger btn-sm" onclick="deleteSet(${i})">🗑️</button>
+                <small>S${i+1}</small>
+                <input type="number" class="form-control form-control-sm bg-secondary text-white" value="${val}" onchange="editSet(${i}, 'home', this.value)">
+                <input type="number" class="form-control form-control-sm bg-secondary text-white" value="${state.awaySetsHistory[i]}" onchange="editSet(${i}, 'away', this.value)">
+                <button class="btn btn-danger btn-sm" onclick="deleteSet(${i})">×</button>
             `;
             list.appendChild(div);
         });
     }
 
     function sync() {
-        state.tournamentName = document.getElementById('tournament-input').value;
-        state.homeName = document.getElementById('name-h').value;
-        state.awayName = document.getElementById('name-a').value;
-        state.homeColor = document.getElementById('color-h').value;
-        state.awayColor = document.getElementById('color-a').value;
-        state.homeLogo = document.getElementById('logo-h').value;
-        state.awayLogo = document.getElementById('logo-a').value;
-        socket.emit('updateAction', state);
+        const data = {
+            tournamentName: document.getElementById('tournament-input').value,
+            homeName: document.getElementById('name-h').value,
+            awayName: document.getElementById('name-a').value,
+            homeColor: document.getElementById('color-h').value,
+            awayColor: document.getElementById('color-a').value,
+            homeTextColor: document.getElementById('text-h').value,
+            awayTextColor: document.getElementById('text-a').value,
+            homeLogo: document.getElementById('logo-h').value,
+            awayLogo: document.getElementById('logo-a').value
+        };
+        socket.emit('updateAction', data);
     }
 
     function modify(key, val) {
         state[key] = Math.max(0, state[key] + val);
-        socket.emit('updateAction', state);
+        const { timer, ...data } = state;
+        socket.emit('updateAction', data);
     }
 
     function pushSet() {
         state.homeSetsHistory.push(state.homeScore);
         state.awaySetsHistory.push(state.awayScore);
         state.homeScore = 0; state.awayScore = 0;
-        socket.emit('updateAction', state);
+        const { timer, ...data } = state;
+        socket.emit('updateAction', data);
     }
 
-    function editSet(index, team, value) {
-        if(team === 'home') state.homeSetsHistory[index] = parseInt(value);
-        else state.awaySetsHistory[index] = parseInt(value);
-        socket.emit('updateAction', state);
+    function editSet(i, team, v) {
+        if(team === 'home') state.homeSetsHistory[i] = parseInt(v);
+        else state.awaySetsHistory[i] = parseInt(v);
+        const { timer, ...data } = state;
+        socket.emit('updateAction', data);
     }
 
-    function deleteSet(index) {
-        state.homeSetsHistory.splice(index, 1);
-        state.awaySetsHistory.splice(index, 1);
-        socket.emit('updateAction', state);
+    function deleteSet(i) {
+        state.homeSetsHistory.splice(i, 1);
+        state.awaySetsHistory.splice(i, 1);
+        const { timer, ...data } = state;
+        socket.emit('updateAction', data);
     }
 
     function timer(cmd) { socket.emit('controlTimer', cmd); }
