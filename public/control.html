@@ -62,10 +62,20 @@
         <button class="btn btn-info w-100 mb-3" onclick="pushSet()">GUARDAR SET Y CONTINUAR</button>
         <div id="sets-history-list"></div>
     </div>
+
+    <div class="module">
+    <label>MODO DE PANTALLA</label>
+    <div class="btn-group w-100">
+        <button class="btn btn-outline-light" onclick="setMode('match')">Marcador</button>
+        <button class="btn btn-outline-light" onclick="setMode('halftime')">Entretiempo</button>
+        <button class="btn btn-outline-light" onclick="setMode('final')">Final</button>
+    </div>
+</div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+    let password = prompt("Pa2026");
     const socket = io();
     let state = {};
 
@@ -158,3 +168,4 @@
 </script>
 </body>
 </html>
+
