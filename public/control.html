@@ -1,171 +1,112 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Control Voley</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #121212; color: white; padding: 15px; padding-bottom: 60px; }
+        body { background: #121212; color: white; padding: 15px; }
         .module { background: #1e1e1e; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #444; }
-        .score-display { font-size: 3rem; font-weight: bold; background: #000; border-radius: 8px; margin: 10px 0; color: #f1c40f; text-align: center; }
-        .timer-big { font-family: monospace; font-size: 3rem; color: #00ffcc; text-align: center; }
-        label { font-size: 0.75rem; color: #888; text-transform: uppercase; }
-        .btn-saque { font-weight: bold; letter-spacing: 1px; }
+        .timer-big { font-family: monospace; font-size: 2.5rem; color: #00ffcc; text-align: center; }
     </style>
 </head>
 <body>
+    <div class="container" style="max-width: 500px;">
+        <div class="module">
+            <label>MODO PANTALLA</label>
+            <select id="mode-sel" class="form-select bg-dark text-white mb-2" onchange="sync()">
+                <option value="match">Marcador Vivo</option>
+                <option value="halftime">Banner Entretiempo</option>
+                <option value="final">Banner Final</option>
+            </select>
+            <input type="text" id="tour-in" class="form-control bg-dark text-white mb-2" onchange="sync()">
+            <div class="timer-big" id="t-val">00:00</div>
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-success flex-fill" onclick="sendTimer('start')">INICIAR</button>
+                <button class="btn btn-warning flex-fill" onclick="sendTimer('pause')">PAUSA</button>
+                <button class="btn btn-danger" onclick="sendTimer('reset')">R</button>
+            </div>
+        </div>
 
-<div class="container" style="max-width: 500px;">
-    <div class="module">
-        <label>Evento / Campeonato</label>
-        <input type="text" id="tournament-input" class="form-control bg-dark text-white mb-3" onchange="sync()">
-        <div class="timer-big" id="timer-val">00:00</div>
-        <div class="d-flex gap-2 mt-2">
-            <button class="btn btn-success flex-fill" onclick="timer('start')">INICIAR</button>
-            <button class="btn btn-warning flex-fill" onclick="timer('pause')">PAUSA</button>
-            <button class="btn btn-danger flex-fill" onclick="timer('reset')">RESET</button>
+        <div class="module" id="mod-h" style="border-color: #36ba98;">
+            <input type="text" id="n-h" class="form-control bg-dark text-white mb-2" onchange="sync()">
+            <div class="d-flex gap-1 mb-2">
+                <input type="color" id="c-h" class="form-control form-control-color w-50" onchange="sync()">
+                <input type="color" id="ct-h" class="form-control form-control-color w-50" onchange="sync()">
+            </div>
+            <input type="text" id="l-h" class="form-control bg-dark text-white mb-2" placeholder="URL Logo" onchange="sync()">
+            <div class="d-flex gap-2 align-items-center">
+                <button class="btn btn-primary btn-lg flex-fill" onclick="modScore('homeScore',1)">+1 LOCAL</button>
+                <button class="btn btn-outline-warning" onclick="setSrv('home')">🏐</button>
+            </div>
+        </div>
+
+        <div class="module" id="mod-a" style="border-color: #a044ff;">
+            <input type="text" id="n-a" class="form-control bg-dark text-white mb-2" onchange="sync()">
+            <div class="d-flex gap-1 mb-2">
+                <input type="color" id="c-a" class="form-control form-control-color w-50" onchange="sync()">
+                <input type="color" id="ct-a" class="form-control form-control-color w-50" onchange="sync()">
+            </div>
+            <input type="text" id="l-a" class="form-control bg-dark text-white mb-2" placeholder="URL Logo" onchange="sync()">
+            <div class="d-flex gap-2 align-items-center">
+                <button class="btn btn-primary btn-lg flex-fill" onclick="modScore('awayScore',1)">+1 VISITA</button>
+                <button class="btn btn-outline-warning" onclick="setSrv('away')">🏐</button>
+            </div>
+        </div>
+
+        <div class="module">
+            <button class="btn btn-info w-100 mb-2" onclick="pushSet()">GUARDAR SET</button>
+            <div id="hist"></div>
         </div>
     </div>
 
-    <div class="module" style="border-color: #36ba98;">
-        <input type="text" id="name-h" class="form-control bg-dark text-white mb-2" placeholder="Nombre Local" onchange="sync()">
-        <div class="row g-2 mb-2">
-            <div class="col-6"><label>Fondo</label><input type="color" id="color-h" class="form-control form-control-color w-100" onchange="sync()"></div>
-            <div class="col-6"><label>Texto</label><input type="color" id="text-h" class="form-control form-control-color w-100" onchange="sync()"></div>
-        </div>
-        <input type="text" id="logo-h" class="form-control bg-dark text-white mb-3" placeholder="URL Logo" onchange="sync()">
-        <div class="score-display" id="val-h">0</div>
-        <div class="btn-group w-100 mb-2">
-            <button class="btn btn-primary btn-lg" onclick="modify('homeScore', 1)">+1</button>
-            <button class="btn btn-outline-danger" onclick="modify('homeScore', -1)">-1</button>
-        </div>
-        <button id="btn-saque-h" class="btn btn-outline-warning w-100 btn-saque" onclick="setServer('home')">🏐 SAQUE</button>
-    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let state = {};
+        let pass = prompt("Contraseña de control:", "1234");
 
-    <div class="module" style="border-color: #a044ff;">
-        <input type="text" id="name-a" class="form-control bg-dark text-white mb-2" placeholder="Nombre Visita" onchange="sync()">
-        <div class="row g-2 mb-2">
-            <div class="col-6"><label>Fondo</label><input type="color" id="color-a" class="form-control form-control-color w-100" onchange="sync()"></div>
-            <div class="col-6"><label>Texto</label><input type="color" id="text-a" class="form-control form-control-color w-100" onchange="sync()"></div>
-        </div>
-        <input type="text" id="logo-a" class="form-control bg-dark text-white mb-3" placeholder="URL Logo" onchange="sync()">
-        <div class="score-display" id="val-a">0</div>
-        <div class="btn-group w-100 mb-2">
-            <button class="btn btn-primary btn-lg" onclick="modify('awayScore', 1)">+1</button>
-            <button class="btn btn-outline-danger" onclick="modify('awayScore', -1)">-1</button>
-        </div>
-        <button id="btn-saque-a" class="btn btn-outline-warning w-100 btn-saque" onclick="setServer('away')">🏐 SAQUE</button>
-    </div>
+        socket.on('init', s => { state = s; ui(); });
+        socket.on('update', s => { state = s; ui(); });
+        socket.on('tick', d => { document.getElementById('t-val').innerText = fmt(d.timer); });
 
-    <div class="module">
-        <button class="btn btn-info w-100 mb-3" onclick="pushSet()">GUARDAR SET Y CONTINUAR</button>
-        <div id="sets-history-list"></div>
-    </div>
+        function ui() {
+            document.getElementById('tour-in').value = state.tournamentName;
+            document.getElementById('mode-sel').value = state.overlayMode;
+            document.getElementById('n-h').value = state.homeName; document.getElementById('n-a').value = state.awayName;
+            document.getElementById('c-h').value = state.homeColor; document.getElementById('c-a').value = state.awayColor;
+            document.getElementById('ct-h').value = state.homeTextColor; document.getElementById('ct-a').value = state.awayTextColor;
+            document.getElementById('l-h').value = state.homeLogo; document.getElementById('l-a').value = state.awayLogo;
+            
+            let h = "";
+            state.homeSetsHistory.forEach((v, i) => {
+                h += `<div class="d-flex gap-1 mb-1"><small class="text-muted">S${i+1}</small>
+                <input type="number" class="form-control form-control-sm bg-dark text-white" value="${v}" onchange="editS(${i},'h',this.value)">
+                <input type="number" class="form-control form-control-sm bg-dark text-white" value="${state.awaySetsHistory[i]}" onchange="editS(${i},'a',this.value)">
+                <button class="btn btn-danger btn-sm" onclick="delS(${i})">×</button></div>`;
+            });
+            document.getElementById('hist').innerHTML = h;
+        }
 
-    <div class="module">
-    <label>MODO DE PANTALLA</label>
-    <div class="btn-group w-100">
-        <button class="btn btn-outline-light" onclick="setMode('match')">Marcador</button>
-        <button class="btn btn-outline-light" onclick="setMode('halftime')">Entretiempo</button>
-        <button class="btn btn-outline-light" onclick="setMode('final')">Final</button>
-    </div>
-</div>
-</div>
+        function sync() {
+            const d = {
+                password: pass,
+                tournamentName: document.getElementById('tour-in').value,
+                overlayMode: document.getElementById('mode-sel').value,
+                homeName: document.getElementById('n-h').value, awayName: document.getElementById('n-a').value,
+                homeColor: document.getElementById('c-h').value, awayColor: document.getElementById('c-a').value,
+                homeTextColor: document.getElementById('ct-h').value, awayTextColor: document.getElementById('ct-a').value,
+                homeLogo: document.getElementById('l-h').value, awayLogo: document.getElementById('l-a').value
+            };
+            socket.emit('updateAction', d);
+        }
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-    let password = prompt("Pa2026");
-    const socket = io();
-    let state = {};
-
-    socket.on('init', s => { state = s; updateUI(); });
-    socket.on('update', s => { state = s; updateUI(); });
-    socket.on('tick', d => { document.getElementById('timer-val').innerText = format(d.timer); });
-
-    function updateUI() {
-        document.getElementById('tournament-input').value = state.tournamentName;
-        document.getElementById('name-h').value = state.homeName;
-        document.getElementById('name-a').value = state.awayName;
-        document.getElementById('val-h').innerText = state.homeScore;
-        document.getElementById('val-a').innerText = state.awayScore;
-        document.getElementById('color-h').value = state.homeColor;
-        document.getElementById('color-a').value = state.awayColor;
-        document.getElementById('text-h').value = state.homeTextColor;
-        document.getElementById('text-a').value = state.awayTextColor;
-        document.getElementById('logo-h').value = state.homeLogo;
-        document.getElementById('logo-a').value = state.awayLogo;
-
-        // Estilo botones saque
-        document.getElementById('btn-saque-h').className = state.serverSide === 'home' ? 'btn btn-warning w-100' : 'btn btn-outline-warning w-100';
-        document.getElementById('btn-saque-a').className = state.serverSide === 'away' ? 'btn btn-warning w-100' : 'btn btn-outline-warning w-100';
-
-        const list = document.getElementById('sets-history-list');
-        list.innerHTML = '';
-        state.homeSetsHistory.forEach((val, i) => {
-            const div = document.createElement('div');
-            div.className = 'd-flex align-items-center gap-2 mb-2 bg-dark p-2 rounded';
-            div.innerHTML = `
-                <span class="badge bg-secondary">S${i+1}</span>
-                <input type="number" class="form-control form-control-sm bg-dark text-white" value="${val}" onchange="editSet(${i}, 'home', this.value)">
-                <input type="number" class="form-control form-control-sm bg-dark text-white" value="${state.awaySetsHistory[i]}" onchange="editSet(${i}, 'away', this.value)">
-                <button class="btn btn-danger btn-sm" onclick="deleteSet(${i})">×</button>
-            `;
-            list.appendChild(div);
-        });
-    }
-
-    function sync() {
-        const { timer, ...data } = state;
-        data.tournamentName = document.getElementById('tournament-input').value;
-        data.homeName = document.getElementById('name-h').value;
-        data.awayName = document.getElementById('name-a').value;
-        data.homeColor = document.getElementById('color-h').value;
-        data.awayColor = document.getElementById('color-a').value;
-        data.homeTextColor = document.getElementById('text-h').value;
-        data.awayTextColor = document.getElementById('text-a').value;
-        data.homeLogo = document.getElementById('logo-h').value;
-        data.awayLogo = document.getElementById('logo-a').value;
-        socket.emit('updateAction', data);
-    }
-
-    function modify(key, val) {
-        state[key] = Math.max(0, state[key] + val);
-        const { timer, ...data } = state;
-        socket.emit('updateAction', data);
-    }
-
-    function setServer(side) {
-        state.serverSide = side;
-        const { timer, ...data } = state;
-        socket.emit('updateAction', data);
-    }
-
-    function pushSet() {
-        state.homeSetsHistory.push(state.homeScore);
-        state.awaySetsHistory.push(state.awayScore);
-        state.homeScore = 0; state.awayScore = 0;
-        const { timer, ...data } = state;
-        socket.emit('updateAction', data);
-    }
-
-    function editSet(i, team, v) {
-        if(team === 'home') state.homeSetsHistory[i] = parseInt(v);
-        else state.awaySetsHistory[i] = parseInt(v);
-        const { timer, ...data } = state;
-        socket.emit('updateAction', data);
-    }
-
-    function deleteSet(i) {
-        state.homeSetsHistory.splice(i, 1);
-        state.awaySetsHistory.splice(i, 1);
-        const { timer, ...data } = state;
-        socket.emit('updateAction', data);
-    }
-
-    function timer(cmd) { socket.emit('controlTimer', cmd); }
-    function format(s) { return Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0'); }
-</script>
+        function modScore(k, v) { state[k] = Math.max(0, state[k]+v); socket.emit('updateAction', {...state, password: pass}); }
+        function setSrv(s) { state.serverSide = s; socket.emit('updateAction', {...state, password: pass}); }
+        function pushSet() { state.homeSetsHistory.push(state.homeScore); state.awaySetsHistory.push(state.awayScore); state.homeScore=0; state.awayScore=0; socket.emit('updateAction', {...state, password: pass}); }
+        function editS(i,t,v) { if(t==='h') state.homeSetsHistory[i]=parseInt(v); else state.awaySetsHistory[i]=parseInt(v); socket.emit('updateAction', {...state, password: pass}); }
+        function delS(i) { state.homeSetsHistory.splice(i,1); state.awaySetsHistory.splice(i,1); socket.emit('updateAction', {...state, password: pass}); }
+        function sendTimer(c) { socket.emit('controlTimer', {password: pass, cmd: c}); }
+        function fmt(s) { return Math.floor(s/60).toString().padStart(2,'0')+":"+(s%60).toString().padStart(2,'0'); }
+    </script>
 </body>
 </html>
-
