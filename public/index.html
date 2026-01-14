@@ -6,146 +6,131 @@
         :root { --home-bg: #00cba9; --away-bg: #a044ff; --title-bg: #0b1422; --timer-bg: #000; }
         body { background: transparent; margin: 0; padding: 40px; font-family: 'Roboto Condensed', sans-serif; color: white; overflow: hidden; }
 
-        /* MARCADOR PRINCIPAL (Live Match) */
+        /* MARCADOR LIVE */
         .live-score {
             position: fixed; bottom: 50px; left: 50px;
-            display: flex; flex-direction: column; width: 450px;
+            display: flex; flex-direction: column; width: 550px;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
-            transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.5s;
         }
 
-        .team-row { display: flex; height: 50px; align-items: stretch; margin-bottom: 2px; }
-        .name-box { flex: 1; display: flex; align-items: center; padding: 0 15px; font-size: 24px; text-transform: uppercase; position: relative; }
-        .logo-img { height: 35px; width: 35px; object-fit: contain; margin-right: 12px; }
-        .pts-box { width: 70px; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 900; background: rgba(0,0,0,0.3); }
+        .team-row { display: flex; height: 55px; align-items: stretch; margin-bottom: 2px; }
+        .name-box { flex: 1; display: flex; align-items: center; padding: 0 15px; font-size: 26px; text-transform: uppercase; position: relative; }
+        
+        /* CONTENEDOR DE SETS PREVIOS EN MARCADOR */
+        .hist-container { display: flex; background: rgba(0,0,0,0.4); }
+        .hist-set { width: 45px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #aaa; border-left: 1px solid rgba(255,255,255,0.1); }
+        
+        .pts-box { width: 80px; display: flex; align-items: center; justify-content: center; font-size: 38px; font-weight: 900; background: #000; color: gold; }
         
         .footer-live { display: flex; height: 35px; background: var(--title-bg); align-items: center; border-top: 2px solid rgba(255,255,255,0.1); }
-        .timer-box { width: 100px; background: var(--timer-bg); height: 100%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-family: 'Roboto', monospace; position: relative; }
-        .tour-name-live { flex: 1; padding: 0 15px; font-size: 14px; letter-spacing: 1px; color: #ccc; }
+        .timer-box { width: 100px; background: var(--timer-bg); height: 100%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-family: 'Roboto', monospace; }
+        .tour-name { flex: 1; padding: 0 15px; font-size: 14px; color: #ccc; }
 
-        /* SAQUE */
-        .ball { position: absolute; right: 10px; font-size: 18px; opacity: 0; transition: 0.3s; color: gold; }
-        .serving .ball { opacity: 1; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .ball { position: absolute; right: 10px; opacity: 0; color: gold; font-size: 18px; }
+        .serving .ball { opacity: 1; }
 
-        /* LOGO TRANSMISOR */
-        .bc-logo { position: absolute; top: -45px; left: 0; height: 35px; padding: 5px; background: rgba(0,0,0,0.5); border-radius: 5px; }
-
-        /* BANNER ALARGADO (Halftime / Final) */
+        /* BANNER ALARGADO */
         .tv-banner {
-            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(200px);
-            width: 90%; max-width: 1200px; height: 100px;
-            background: rgba(11, 20, 34, 0.95); border-bottom: 5px solid gold;
-            display: flex; align-items: center; padding: 0 40px;
-            transition: transform 1s cubic-bezier(0.1, 0.9, 0.2, 1);
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(300px);
+            width: 90%; max-width: 1200px; height: 100px; background: #0b1422; 
+            border-bottom: 5px solid gold; display: flex; align-items: center; 
+            padding: 0 40px; transition: 0.8s;
         }
         .tv-banner.active { transform: translateX(-50%) translateY(0); }
-
-        .banner-team { display: flex; align-items: center; gap: 20px; flex: 1; }
-        .b-logo { height: 70px; width: 70px; object-fit: contain; }
+        .b-score { font-size: 70px; font-weight: 900; color: gold; width: 100px; text-align: center; }
         .b-name { font-size: 40px; text-transform: uppercase; }
-        .b-score-large { font-size: 70px; font-weight: 900; color: gold; width: 120px; text-align: center; }
-        .b-sets-small { font-size: 20px; color: #aaa; margin-left: 10px; }
-        .vs-text { font-size: 30px; color: #555; margin: 0 30px; }
-
-        .hidden { transform: translateY(300px); opacity: 0; }
+        .b-sets { font-size: 20px; color: #aaa; }
     </style>
 </head>
 <body>
 
     <div id="live" class="live-score">
-        <div class="bc-logo" id="bc-wrap"><img id="bc-img" style="height:100%"></div>
         <div class="team-row" id="row-h">
-            <div class="name-box" id="nb-h"><img id="l-h" class="logo-img"><span id="n-h"></span><span class="ball">🏐</span></div>
+            <div class="name-box" id="nb-h"><span id="n-h"></span><span class="ball">🏐</span></div>
+            <div class="hist-container" id="hist-h"></div>
             <div class="pts-box" id="p-h">0</div>
         </div>
         <div class="team-row" id="row-a">
-            <div class="name-box" id="nb-a"><img id="l-a" class="logo-img"><span id="n-a"></span><span class="ball">🏐</span></div>
+            <div class="name-box" id="nb-a"><span id="n-a"></span><span class="ball">🏐</span></div>
+            <div class="hist-container" id="hist-a"></div>
             <div class="pts-box" id="p-a">0</div>
         </div>
         <div class="footer-live">
-            <div class="timer-box" id="t-wrap"><span id="timer">00:00</span></div>
-            <div class="tour-name-live" id="tour-live"></div>
+            <div class="timer-box" id="timer">00:00</div>
+            <div class="tour-name" id="tour-live"></div>
         </div>
     </div>
 
     <div id="banner" class="tv-banner">
-        <div class="banner-team" style="justify-content: flex-end;">
-            <div style="text-align: right;">
-                <div class="b-name" id="bn-h"></div>
-                <div class="b-sets-small">SETS GANADOS: <span id="bs-h"></span></div>
-            </div>
-            <img id="bl-h" class="b-logo">
-            <div class="b-score-large" id="bp-h"></div>
+        <div style="flex:1; text-align:right;">
+            <div class="b-name" id="bn-h"></div>
+            <div class="b-sets">SETS: <span id="bs-h">0</span></div>
         </div>
-        <div class="vs-text">VS</div>
-        <div class="banner-team">
-            <div class="b-score-large" id="bp-a"></div>
-            <img id="bl-a" class="b-logo">
-            <div>
-                <div class="b-name" id="bn-a"></div>
-                <div class="b-sets-small">SETS GANADOS: <span id="bs-a"></span></div>
-            </div>
+        <div class="b-score" id="bp-h">0</div>
+        <div style="font-size:40px; margin:0 30px;">VS</div>
+        <div class="b-score" id="bp-a">0</div>
+        <div style="flex:1;">
+            <div class="b-name" id="bn-a"></div>
+            <div class="b-sets">SETS: <span id="bs-a">0</span></div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+
         socket.on('update', s => {
-            // Visibilidad
-            if(s.overlayMode === 'match') {
-                document.getElementById('live').classList.remove('hidden');
-                document.getElementById('banner').classList.remove('active');
-            } else {
-                document.getElementById('live').classList.add('hidden');
-                document.getElementById('banner').classList.add('active');
-                
-                // Data Banner
+            const isMatch = s.overlayMode === 'match';
+            document.getElementById('live').style.opacity = isMatch ? '1' : '0';
+            document.getElementById('banner').classList.toggle('active', !isMatch);
+
+            // Textos Live
+            document.getElementById('n-h').innerText = s.homeName;
+            document.getElementById('n-a').innerText = s.awayName;
+            document.getElementById('p-h').innerText = s.homeScore;
+            document.getElementById('p-a').innerText = s.awayScore;
+            document.getElementById('tour-live').innerText = s.tournamentName;
+
+            // Colores
+            document.getElementById('nb-h').style.background = s.homeColor;
+            document.getElementById('nb-a').style.background = s.awayColor;
+            document.getElementById('live').style.setProperty('--title-bg', s.bgColorTitle);
+            document.getElementById('tour-live').style.color = s.textColorTitle;
+
+            // Saque
+            document.getElementById('row-h').className = s.serverSide==='home'?'team-row serving':'team-row';
+            document.getElementById('row-a').className = s.serverSide==='away'?'team-row serving':'team-row';
+
+            // HISTORIAL EN PANTALLA
+            drawHistory('hist-h', s.homeSetsHistory);
+            drawHistory('hist-a', s.awaySetsHistory);
+
+            // BANNERS
+            if(!isMatch) {
                 document.getElementById('bn-h').innerText = s.homeName;
                 document.getElementById('bn-a').innerText = s.awayName;
                 document.getElementById('bp-h').innerText = s.homeScore;
                 document.getElementById('bp-a').innerText = s.awayScore;
                 document.getElementById('bs-h').innerText = s.homeSets;
                 document.getElementById('bs-a').innerText = s.awaySets;
-                document.getElementById('bl-h').src = s.homeLogo;
-                document.getElementById('bl-a').src = s.awayLogo;
             }
-
-            // Marcador Live
-            document.getElementById('n-h').innerText = s.homeName;
-            document.getElementById('n-a').innerText = s.awayName;
-            document.getElementById('p-h').innerText = s.homeScore;
-            document.getElementById('p-a').innerText = s.awayScore;
-            document.getElementById('tour-live').innerText = s.tournamentName;
-            
-            // Colores
-            document.getElementById('nb-h').style.background = s.homeColor;
-            document.getElementById('nb-h').style.color = s.homeTextColor;
-            document.getElementById('nb-a').style.background = s.awayColor;
-            document.getElementById('nb-a').style.color = s.awayTextColor;
-            document.querySelector('.footer-live').style.background = s.bgColorTitle;
-            document.getElementById('tour-live').style.color = s.textColorTitle;
-            document.getElementById('t-wrap').style.background = s.bgColorTimer;
-            
-            // Saque
-            document.getElementById('row-h').className = s.serverSide==='home'?'team-row serving':'team-row';
-            document.getElementById('row-a').className = s.serverSide==='away'?'team-row serving':'team-row';
-
-            // Logos
-            document.getElementById('l-h').src = s.homeLogo;
-            document.getElementById('l-a').src = s.awayLogo;
-            if(s.broadcasterLogo) {
-                document.getElementById('bc-img').src = s.broadcasterLogo;
-                document.getElementById('bc-wrap').style.display = 'block';
-            } else document.getElementById('bc-wrap').style.display = 'none';
-
-            if(!s.isRunning) document.getElementById('timer').innerText = fmt(s.timer);
         });
 
         socket.on('tick', d => { document.getElementById('timer').innerText = fmt(d.timer); });
+
+        function drawHistory(id, data) {
+            const container = document.getElementById(id);
+            container.innerHTML = '';
+            data.forEach(val => {
+                const d = document.createElement('div');
+                d.className = 'hist-set';
+                d.innerText = val;
+                container.appendChild(d);
+            });
+        }
         function fmt(s) { return Math.floor(s/60).toString().padStart(2,'0')+":"+(s%60).toString().padStart(2,'0'); }
     </script>
 </body>
 </html>
+
 
