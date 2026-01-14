@@ -24,6 +24,32 @@ setInterval(() => {
     }
 }, 1000);
 
+// NUEVA SECCIÓN: API para Stream Deck
+app.get('/api/:action/:value', (req, res) => {
+    const { action, value } = req.params;
+
+    if (action === 'homeScore') state.homeScore = Math.max(0, state.homeScore + parseInt(value));
+    if (action === 'awayScore') state.awayScore = Math.max(0, state.awayScore + parseInt(value));
+    if (action === 'homeSets') state.homeSets = Math.max(0, state.homeSets + parseInt(value));
+    if (action === 'awaySets') state.awaySets = Math.max(0, state.awaySets + parseInt(value));
+    
+    if (action === 'timer') {
+        if (value === 'start') state.isRunning = true;
+        if (value === 'pause') state.isRunning = false;
+        if (value === 'reset') { state.timer = 0; state.isRunning = false; }
+    }
+
+    if (action === 'pushSet') {
+        state.homeSetsHistory.push(state.homeScore);
+        state.awaySetsHistory.push(state.awayScore);
+        state.homeScore = 0;
+        state.awayScore = 0;
+    }
+
+    io.emit('update', state); // Avisar a todos los marcadores
+    res.send({ status: 'ok', current: state });
+});
+
 io.on('connection', (socket) => {
     socket.emit('init', state);
     socket.on('updateAction', (data) => {
@@ -42,4 +68,5 @@ io.on('connection', (socket) => {
 });
 
 server.listen(3000, () => console.log("Servidor V10 - Online"));
+
 
