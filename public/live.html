@@ -4,41 +4,69 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&family=Roboto:wght@900&display=swap" rel="stylesheet">
     <style>
         body { background: transparent; margin: 0; padding: 30px; font-family: 'Roboto Condensed', sans-serif; overflow: hidden; }
-        .board { position: fixed; bottom: 30px; left: 30px; display: flex; flex-direction: column; width: 480px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); }
+        .board { position: fixed; bottom: 30px; left: 30px; display: flex; flex-direction: column; width: 500px; filter: drop-shadow(0 8px 8px rgba(0,0,0,0.5)); }
         .row-t { display: flex; height: 50px; margin-bottom: 2px; }
-        .name { flex: 1; display: flex; align-items: center; padding: 0 15px; font-size: 24px; text-transform: uppercase; font-weight: 900; color: white; text-shadow: 2px 2px 2px black; }
-        .logo { height: 35px; width: 35px; object-fit: contain; margin-right: 12px; background: rgba(255,255,255,0.1); border-radius: 4px; }
-        .pts { width: 70px; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 900; background: #000; color: gold; border-left: 2px solid rgba(255,255,255,0.2); }
+        .name-box { flex: 1; display: flex; align-items: center; padding: 0 15px; font-size: 24px; text-transform: uppercase; font-weight: 900; text-shadow: 2px 2px 2px black; }
+        .logo-img { height: 38px; width: 38px; object-fit: contain; margin-right: 12px; }
+        .pts { width: 75px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; background: #000; color: gold; border-left: 2px solid rgba(255,255,255,0.2); }
         .hist { display: flex; background: rgba(0,0,0,0.7); }
-        .set { width: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; font-weight: bold; border-left: 1px solid #444; }
-        .foot { display: flex; height: 35px; align-items: center; background: #0b1422; border-top: 2px solid rgba(255,255,255,0.2); }
-        .tim { width: 90px; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; font-family: monospace; font-size: 22px; color: #00ffcc; }
-        .tour { flex: 1; padding-left: 15px; font-size: 14px; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        .set-p { width: 42px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; font-weight: bold; border-left: 1px solid #444; }
+        .footer { display: flex; height: 35px; align-items: center; border-top: 2px solid rgba(255,255,255,0.2); }
+        .timer-box { width: 95px; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; font-family: monospace; font-size: 22px; color: #00ffcc; font-weight: bold; }
+        .tour-name { flex: 1; padding-left: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="board">
-        <div class="row-t"><div class="name" id="n-h"><img id="l-h" class="logo"> <span id="tn-h"></span></div><div class="hist" id="h-h"></div><div class="pts" id="p-h">0</div></div>
-        <div class="row-t"><div class="name" id="n-a"><img id="l-a" class="logo"> <span id="tn-a"></span></div><div class="hist" id="h-a"></div><div class="pts" id="p-a">0</div></div>
-        <div class="foot"><div class="tim" id="t">00:00</div><div class="tour" id="tn"></div></div>
+        <div class="row-t">
+            <div class="name-box" id="box-h"><img id="logo-h" class="logo-img"><span id="name-h"></span></div>
+            <div class="hist" id="hist-h"></div>
+            <div class="pts" id="score-h">0</div>
+        </div>
+        <div class="row-t">
+            <div class="name-box" id="box-a"><img id="logo-a" class="logo-img"><span id="name-a"></span></div>
+            <div class="hist" id="hist-a"></div>
+            <div class="pts" id="score-a">0</div>
+        </div>
+        <div class="footer" id="foot">
+            <div class="timer-box" id="timer-val">00:00</div>
+            <div class="tour-name" id="tour-val"></div>
+        </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
         socket.on('update', s => {
-            document.getElementById('tn-h').innerText = s.homeName; document.getElementById('n-h').style.background = s.homeColor; document.getElementById('n-h').style.color = s.homeTextColor;
-            document.getElementById('tn-a').innerText = s.awayName; document.getElementById('n-a').style.background = s.awayColor; document.getElementById('n-a').style.color = s.awayTextColor;
-            document.getElementById('p-h').innerText = s.homeScore; document.getElementById('p-a').innerText = s.awayScore;
-            document.getElementById('l-h').src = s.homeLogo; document.getElementById('l-a').src = s.awayLogo;
-            document.getElementById('tn').innerText = s.tournamentName;
-            draw(s.homeSetsHistory, 'h-h'); draw(s.awaySetsHistory, 'h-a');
+            // Local
+            document.getElementById('name-h').innerText = s.homeName;
+            document.getElementById('logo-h').src = s.homeLogo;
+            document.getElementById('box-h').style.background = s.homeColor;
+            document.getElementById('box-h').style.color = s.homeTextColor;
+            document.getElementById('score-h').innerText = s.homeScore;
+            // Visita
+            document.getElementById('name-a').innerText = s.awayName;
+            document.getElementById('logo-a').src = s.awayLogo;
+            document.getElementById('box-a').style.background = s.awayColor;
+            document.getElementById('box-a').style.color = s.awayTextColor;
+            document.getElementById('score-a').innerText = s.awayScore;
+            // Footer y Torneo
+            document.getElementById('tour-val').innerText = s.tournamentName;
+            document.getElementById('tour-val').style.color = s.textColorTitle;
+            document.getElementById('foot').style.background = s.bgColorTitle;
+            // Historial
+            drawH(s.homeSetsHistory, 'hist-h');
+            drawH(s.awaySetsHistory, 'hist-a');
         });
-        socket.on('tick', d => { document.getElementById('t').innerText = fmt(d.timer); });
-        function draw(data, id) { const c=document.getElementById(id); c.innerHTML=''; data.forEach(v=>{ const d=document.createElement('div'); d.className='set'; d.innerText=v; c.appendChild(d); }); }
+        socket.on('tick', d => { document.getElementById('timer-val').innerText = fmt(d.timer); });
+        function drawH(data, id) {
+            const c = document.getElementById(id); c.innerHTML = '';
+            data.forEach(v => { const d = document.createElement('div'); d.className='set-p'; d.innerText=v; c.appendChild(d); });
+        }
         function fmt(s) { return Math.floor(s/60).toString().padStart(2,'0')+":"+(s%60).toString().padStart(2,'0'); }
     </script>
 </body>
 </html>
+
 
 
 
