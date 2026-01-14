@@ -8,19 +8,14 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.use(express.static('public'));
 
 let state = {
-    // Configuración General
-    tournamentName: 'VOLLEYBALL CHAMPIONSHIP',
+    tournamentName: 'COPA DE CAMPEONES 2026',
     bgColorTitle: '#0b1422', textColorTitle: '#ffffff',
-    bgColorTimer: '#000000', bgColorHist: '#1a2a44',
-    colorServeIndic: '#ffd700', broadcasterLogo: '', 
+    bgColorTimer: '#000000', broadcasterLogo: '', 
     overlayMode: 'match',
-    // Equipo Local
     homeName: 'LOCAL', homeColor: '#00cba9', homeTextColor: '#ffffff', homeLogo: '',
     homeScore: 0, homeSets: 0, homeSetsHistory: [],
-    // Equipo Visita
     awayName: 'VISITA', awayColor: '#a044ff', awayTextColor: '#ffffff', awayLogo: '',
     awayScore: 0, awaySets: 0, awaySetsHistory: [],
-    // Control
     serverSide: 'none', timer: 0, isRunning: false, timerMode: 'up'
 };
 
@@ -51,4 +46,4 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(3000, () => console.log("Servidor Pro v4 - Full Opciones"));
+server.listen(3000, () => console.log("Servidor Broadcast V5 Harry <3 - Online"));
