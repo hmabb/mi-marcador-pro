@@ -3,80 +3,76 @@
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&family=Roboto:wght@900&display=swap" rel="stylesheet">
     <style>
-        :root { --main-dark: #0b1422; }
         body { background: transparent; margin: 0; padding: 40px; font-family: 'Roboto Condensed', sans-serif; color: white; overflow: hidden; }
 
-        /* MARCADOR EN VIVO (Bottom Left) */
-        .live-board { position: fixed; bottom: 50px; left: 50px; display: flex; flex-direction: column; width: 480px; transition: 0.5s; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); }
-        .live-row { display: flex; height: 50px; margin-bottom: 2px; }
-        .live-name { flex: 1; display: flex; align-items: center; padding: 0 15px; font-size: 24px; text-transform: uppercase; position: relative; }
-        .live-logo { height: 32px; width: 32px; object-fit: contain; margin-right: 12px; }
-        .live-pts { width: 70px; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 900; background: #000; color: gold; }
-        .live-footer { display: flex; height: 35px; align-items: center; border-top: 2px solid rgba(255,255,255,0.1); }
-        .live-timer { width: 90px; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-size: 20px; background: #000; }
-        .live-tour { flex: 1; padding-left: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* HISTORIAL DE SETS EN VIVO */
-        .live-hist { display: flex; background: rgba(0,0,0,0.4); }
-        .set-box { width: 35px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #bbb; border-left: 1px solid #333; }
+        /* LIVE BOARD (Abajo Izquierda) */
+        .live-score { position: fixed; bottom: 50px; left: 50px; display: flex; flex-direction: column; width: 480px; transition: 0.5s; }
+        .team-row { display: flex; height: 50px; margin-bottom: 2px; }
+        .name-box { flex: 1; display: flex; align-items: center; padding: 0 15px; font-size: 24px; text-transform: uppercase; position: relative; }
+        .logo { height: 35px; width: 35px; object-fit: contain; margin-right: 12px; }
+        .pts-now { width: 70px; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 900; background: #000; color: gold; }
+        .hist-view { display: flex; background: rgba(0,0,0,0.5); }
+        .set-pill { width: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #aaa; border-left: 1px solid rgba(255,255,255,0.1); }
+        
+        .footer { display: flex; height: 35px; align-items: center; border-top: 2px solid rgba(255,255,255,0.1); }
+        .timer { width: 90px; height: 100%; display: flex; align-items: center; justify-content: center; font-family: monospace; font-size: 20px; background: #000; }
+        .tour-name { flex: 1; padding-left: 15px; font-size: 14px; text-transform: uppercase; }
 
         /* BANNER ALARGADO (Central Inferior) */
-        .tv-banner {
-            position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%) translateY(300px);
-            width: 85%; max-width: 1200px; height: 110px; background: rgba(11, 20, 34, 0.98);
+        .banner-tv {
+            position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%) translateY(400px);
+            width: 90%; max-width: 1200px; height: 110px; background: #0b1422; 
             border-bottom: 6px solid gold; display: flex; align-items: center; padding: 0 40px; transition: 0.8s cubic-bezier(0.1, 0.9, 0.2, 1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
         }
-        .tv-banner.active { transform: translateX(-50%) translateY(0); }
+        .banner-tv.active { transform: translateX(-50%) translateY(0); }
         .b-team { flex: 1; display: flex; align-items: center; gap: 20px; }
-        .b-logo { height: 75px; width: 75px; object-fit: contain; }
-        .b-name { font-size: 42px; text-transform: uppercase; font-weight: 900; }
-        .b-score { font-size: 80px; font-weight: 900; color: gold; width: 120px; text-align: center; }
-        .b-sets { font-size: 20px; color: #999; margin-top: -5px; }
-        .b-label { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: gold; color: black; padding: 2px 20px; font-weight: bold; font-size: 14px; border-radius: 5px 5px 0 0; }
+        .b-name { font-size: 45px; text-transform: uppercase; font-weight: 900; }
+        .b-score { font-size: 85px; font-weight: 900; color: gold; width: 130px; text-align: center; }
+        .b-sets { font-size: 22px; color: #999; margin-top: -5px; }
 
-        /* ICONO SAQUE */
-        .ball { position: absolute; right: 10px; color: gold; opacity: 0; }
-        .serving .ball { opacity: 1; }
-        .hidden { opacity: 0; transform: translateY(50px); pointer-events: none; }
+        /* SAQUE */
+        .ball { position: absolute; right: 10px; color: gold; opacity: 0; font-size: 18px; }
+        .serving .ball { opacity: 1; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.3; } }
+        .hidden { opacity: 0; transform: translateY(100px); }
     </style>
 </head>
 <body>
 
-    <div id="live" class="live-board">
-        <div id="row-h" class="live-row">
-            <div class="live-name" id="nb-h"><img id="l-h" class="live-logo"><span id="n-h"></span><span class="ball">🏐</span></div>
-            <div class="live-hist" id="hv-h"></div>
-            <div class="live-pts" id="p-h">0</div>
+    <div id="live" class="live-score">
+        <div class="team-row" id="row-h">
+            <div class="name-box" id="nb-h"><img id="l-h" class="logo"><span id="n-h"></span><span class="ball">🏐</span></div>
+            <div class="hist-view" id="hv-h"></div>
+            <div class="pts-now" id="p-h">0</div>
         </div>
-        <div id="row-a" class="live-row">
-            <div class="live-name" id="nb-a"><img id="l-a" class="live-logo"><span id="n-a"></span><span class="ball">🏐</span></div>
-            <div class="live-hist" id="hv-a"></div>
-            <div class="live-pts" id="p-a">0</div>
+        <div class="team-row" id="row-a">
+            <div class="name-box" id="nb-a"><img id="l-a" class="logo"><span id="n-a"></span><span class="ball">🏐</span></div>
+            <div class="hist-view" id="hv-a"></div>
+            <div class="pts-now" id="p-a">0</div>
         </div>
-        <div class="live-footer" id="l-foot">
-            <div class="live-timer" id="t-v">00:00</div>
-            <div class="live-tour" id="t-n"></div>
+        <div class="footer" id="f-wrap">
+            <div class="timer" id="timer-val">00:00</div>
+            <div class="tour-name" id="tour-val"></div>
         </div>
     </div>
 
-    <div id="banner" class="tv-banner">
-        <div id="b-tag" class="b-label">ENTRETIEMPO</div>
+    <div id="banner" class="banner-tv">
         <div class="b-team" style="justify-content: flex-end;">
             <div style="text-align: right;">
                 <div class="b-name" id="bn-h"></div>
-                <div class="b-sets">SETS GANADOS: <span id="bs-h"></span></div>
+                <div class="b-sets">SETS GANADOS: <span id="bs-h">0</span></div>
             </div>
-            <img id="bl-h" class="b-logo">
+            <img id="bl-h" style="height:80px">
         </div>
         <div class="b-score" id="bp-h">0</div>
-        <div style="font-size:30px; color: #555; margin: 0 20px;">VS</div>
+        <div style="font-size:30px; color:#444; margin:0 25px">VS</div>
         <div class="b-score" id="bp-a">0</div>
         <div class="b-team">
-            <img id="bl-a" class="b-logo">
+            <img id="bl-a" style="height:80px">
             <div>
                 <div class="b-name" id="bn-a"></div>
-                <div class="b-sets">SETS GANADOS: <span id="bs-a"></span></div>
+                <div class="b-sets">SETS GANADOS: <span id="bs-a">0</span></div>
             </div>
         </div>
     </div>
@@ -86,36 +82,37 @@
         const socket = io();
         socket.on('update', s => {
             const isMatch = s.overlayMode === 'match';
-            
-            // Toggle Visibilidad
-            document.getElementById('live').className = isMatch ? 'live-board' : 'live-board hidden';
+            document.getElementById('live').className = isMatch ? 'live-score' : 'live-score hidden';
             document.getElementById('banner').classList.toggle('active', !isMatch);
-            document.getElementById('b-tag').innerText = s.overlayMode === 'halftime' ? 'ENTRETIEMPO' : 'FINAL DEL PARTIDO';
 
-            // Datos Marcador Vivo
+            // Personalización de Equipos (Fondo y Texto)
+            document.getElementById('nb-h').style.background = s.homeColor;
+            document.getElementById('nb-h').style.color = s.homeTextColor;
+            document.getElementById('nb-a').style.background = s.awayColor;
+            document.getElementById('nb-a').style.color = s.awayTextColor;
+
+            // Textos y Logos
             document.getElementById('n-h').innerText = s.homeName;
             document.getElementById('n-a').innerText = s.awayName;
             document.getElementById('p-h').innerText = s.homeScore;
             document.getElementById('p-a').innerText = s.awayScore;
-            document.getElementById('t-n').innerText = s.tournamentName;
+            document.getElementById('l-h').src = s.homeLogo;
+            document.getElementById('l-a').src = s.awayLogo;
 
-            // Logos y Colores Vivo
-            document.getElementById('l-h').src = s.homeLogo; document.getElementById('l-h').style.display = s.homeLogo?'block':'none';
-            document.getElementById('l-a').src = s.awayLogo; document.getElementById('l-a').style.display = s.awayLogo?'block':'none';
-            document.getElementById('nb-h').style.background = s.homeColor; document.getElementById('nb-h').style.color = s.homeTextColor || 'white';
-            document.getElementById('nb-a').style.background = s.awayColor; document.getElementById('nb-a').style.color = s.awayTextColor || 'white';
-            document.getElementById('l-foot').style.background = s.bgColorTitle;
-            document.getElementById('t-n').style.color = s.textColorTitle;
+            // Torneo y Footer
+            document.getElementById('tour-val').innerText = s.tournamentName;
+            document.getElementById('tour-val').style.color = s.textColorTitle;
+            document.getElementById('f-wrap').style.background = s.bgColorTitle;
 
-            // Historial en Vivo
+            // Historial sets
             drawH('hv-h', s.homeSetsHistory);
             drawH('hv-a', s.awaySetsHistory);
 
             // Saque
-            document.getElementById('row-h').classList.toggle('serving', s.serverSide==='home');
-            document.getElementById('row-a').classList.toggle('serving', s.serverSide==='away');
+            document.getElementById('row-h').className = s.serverSide==='home'?'team-row serving':'team-row';
+            document.getElementById('row-a').className = s.serverSide==='away'?'team-row serving':'team-row';
 
-            // Datos Banner (Halftime/Final)
+            // Datos Banner
             if(!isMatch) {
                 document.getElementById('bn-h').innerText = s.homeName;
                 document.getElementById('bn-a').innerText = s.awayName;
@@ -128,15 +125,15 @@
             }
         });
 
-        socket.on('tick', d => { document.getElementById('t-v').innerText = fmt(d.timer); });
-
+        socket.on('tick', d => { document.getElementById('timer-val').innerText = fmt(d.timer); });
         function drawH(id, data) {
             const c = document.getElementById(id); c.innerHTML = '';
-            data.forEach(v => { const b=document.createElement('div'); b.className='set-box'; b.innerText=v; c.appendChild(b); });
+            data.forEach(v => { const d=document.createElement('div'); d.className='set-pill'; d.innerText=v; c.appendChild(d); });
         }
         function fmt(s) { return Math.floor(s/60).toString().padStart(2,'0')+":"+(s%60).toString().padStart(2,'0'); }
     </script>
 </body>
 </html>
+
 
 
