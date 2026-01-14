@@ -3,144 +3,106 @@
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
     <style>
-        body { background: transparent; margin: 0; padding: 40px; font-family: 'Roboto', sans-serif; overflow: hidden; }
+        body { background: transparent; margin: 0; padding: 30px; font-family: 'Roboto', sans-serif; color: white; text-transform: uppercase; overflow: hidden; }
         
-        /* Animación para números */
-        @keyframes pop {
-            0% { transform: scale(1.2); color: #f1c40f; }
-            100% { transform: scale(1); }
-        }
-        .animate-pop { animation: pop 0.4s ease-out; }
+        /* Animaciones */
+        .board { transition: all 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28); opacity: 0; transform: translateX(-50px); }
+        .board.visible { opacity: 1; transform: translateX(0); }
+        
+        @keyframes pop { 0% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .animate-pop { animation: pop 0.3s ease-out; }
 
-        /* Contenedores con transición suave */
-        .board { 
-            display: flex; flex-direction: column; width: fit-content; 
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0; transform: translateY(-20px);
+        .banner { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.7);
+            background: rgba(11, 20, 34, 0.98); border: 5px solid gold; padding: 50px; border-radius: 30px;
+            opacity: 0; visibility: hidden; transition: 0.5s; text-align: center; width: 700px;
         }
-        .board.visible { opacity: 1; transform: translateY(0); }
+        .banner.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
 
-        /* Estilos de Banners */
-        .banner-overlay {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
-            background: rgba(11, 20, 34, 0.95); border: 4px solid gold;
-            padding: 40px; text-align: center; color: white; border-radius: 20px;
-            opacity: 0; visibility: hidden; transition: all 0.5s; width: 600px;
-        }
-        .banner-overlay.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
-
-        /* (Mantener estilos anteriores de .row, .info, .set-box, etc.) */
-        /* ... copio solo los necesarios para brevedad ... */
-        .row { display: flex; height: 55px; margin-bottom: 2px; align-items: center; }
-        .info { flex: 1; min-width: 320px; display: flex; align-items: center; padding: 0 20px; font-size: 24px; color: white; text-transform: uppercase;}
+        /* Estructura */
+        .row { display: flex; height: 60px; margin-bottom: 3px; align-items: center; }
+        .info { flex: 1; min-width: 350px; display: flex; align-items: center; padding: 0 25px; font-size: 26px; position: relative; }
+        .logo { width: 40px; height: 40px; margin-right: 15px; object-fit: contain; }
         .sets-area { display: flex; background: #0b1422; height: 100%; }
-        .set-box { width: 55px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-left: 1px solid rgba(255,255,255,0.1); color: #bbb; }
-        .current { width: 75px; background: #1a2a44; color: #fff; font-size: 34px; font-weight: bold; border-left: 2px solid rgba(255,255,255,0.2); }
-        .footer { background: #0b1422; height: 38px; display: flex; align-items: center; padding: 0 20px; font-size: 16px; border-top: 1px solid #333; justify-content: space-between; color: white; text-transform: uppercase;}
-        .logo { width: 38px; height: 38px; margin-right: 15px; object-fit: contain; }
+        .set-box { width: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; border-left: 1px solid #333; color: #888; }
+        .current { width: 85px; background: #1a2a44; color: #fff; font-size: 38px; font-weight: bold; border-left: 3px solid rgba(255,255,255,0.2); }
+        .footer { background: #0b1422; height: 40px; display: flex; align-items: center; padding: 0 20px; font-size: 18px; border-top: 1px solid #333; justify-content: space-between; }
+        .ball { margin-left: auto; opacity: 0; transition: 0.3s; filter: drop-shadow(0 0 5px gold); }
+        .serving .ball { opacity: 1; }
     </style>
 </head>
 <body>
 
-    <div id="main-board" class="board visible">
-        <div class="row">
-            <div class="info" id="bg-h"><img id="logo-h" class="logo"><span id="txt-h"></span></div>
-            <div class="sets-area" id="sets-h-row"></div>
-            <div id="pts-h" class="set-box current">0</div>
+    <div id="main-board" class="board">
+        <div class="row" id="row-h">
+            <div class="info" id="bg-h"><img id="l-h" class="logo"><span id="n-h"></span><span class="ball">🏐</span></div>
+            <div class="sets-area" id="hist-h"></div>
+            <div class="set-box current" id="p-h">0</div>
         </div>
-        <div class="row">
-            <div class="info" id="bg-a"><img id="logo-a" class="logo"><span id="txt-a"></span></div>
-            <div class="sets-area" id="sets-a-row"></div>
-            <div id="pts-a" class="set-box current">0</div>
+        <div class="row" id="row-a">
+            <div class="info" id="bg-a"><img id="l-a" class="logo"><span id="n-a"></span><span class="ball">🏐</span></div>
+            <div class="sets-area" id="hist-a"></div>
+            <div class="set-box current" id="p-a">0</div>
         </div>
-        <div class="footer">
-            <span id="txt-tournament"></span>
-            <span id="timer">00:00</span>
-        </div>
+        <div class="footer"><span id="t-name"></span><span id="timer">00:00</span></div>
     </div>
 
-    <div id="banner" class="banner-overlay">
-        <h1 id="banner-title" style="color: gold; margin-top:0;">ENTRETIEMPO</h1>
-        <div style="display: flex; justify-content: space-around; font-size: 40px; margin: 20px 0;">
-            <div><div id="b-name-h"></div><div id="b-score-h" style="font-size: 80px;">0</div></div>
-            <div style="align-self: center;">VS</div>
-            <div><div id="b-name-a"></div><div id="b-score-a" style="font-size: 80px;">0</div></div>
+    <div id="banner" class="banner">
+        <h1 id="b-title" style="color: gold; font-size: 50px; margin:0;"></h1>
+        <div style="display: flex; justify-content: space-around; font-size: 40px; margin: 30px 0;">
+            <div><div id="bn-h"></div><div id="bp-h" style="font-size: 100px; color: gold;">0</div></div>
+            <div style="align-self: center; font-size: 60px;">VS</div>
+            <div><div id="bn-a"></div><div id="bp-a" style="font-size: 100px; color: gold;">0</div></div>
         </div>
-        <h2 id="b-tournament"></h2>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let currentScores = { h: 0, a: 0 };
+        let oldH = 0, oldA = 0;
 
         socket.on('update', s => {
-            // Manejo de Modos de Pantalla
             const board = document.getElementById('main-board');
             const banner = document.getElementById('banner');
-            
+
             if(s.overlayMode === 'match') {
-                board.classList.add('visible');
-                banner.classList.remove('active');
+                board.classList.add('visible'); banner.classList.remove('active');
             } else {
-                board.classList.remove('visible');
-                banner.classList.add('active');
-                document.getElementById('banner-title').innerText = s.overlayMode === 'halftime' ? 'ENTRETIEMPO' : 'FIN DEL PARTIDO';
-                document.getElementById('b-name-h').innerText = s.homeName;
-                document.getElementById('b-name-a').innerText = s.awayName;
-                document.getElementById('b-score-h').innerText = s.homeScore;
-                document.getElementById('b-score-a').innerText = s.awayScore;
-                document.getElementById('b-tournament').innerText = s.tournamentName;
+                board.classList.remove('visible'); banner.classList.add('active');
+                document.getElementById('b-title').innerText = s.overlayMode === 'halftime' ? 'ENTRETIEMPO' : 'FIN DEL PARTIDO';
+                document.getElementById('bn-h').innerText = s.homeName; document.getElementById('bn-a').innerText = s.awayName;
+                document.getElementById('bp-h').innerText = s.homeScore; document.getElementById('bp-a').innerText = s.awayScore;
             }
 
-            // Animación de puntos si cambian
-            if(s.homeScore !== currentScores.h) triggerAnim('pts-h');
-            if(s.awayScore !== currentScores.a) triggerAnim('pts-a');
-            currentScores = { h: s.homeScore, a: s.awayScore };
+            if(s.homeScore !== oldH) anim('p-h'); if(s.awayScore !== oldA) anim('p-a');
+            oldH = s.homeScore; oldA = s.awayScore;
 
-            // Renderizado normal (colores, logos, nombres...)
-            document.getElementById('txt-h').innerText = s.homeName;
-            document.getElementById('txt-a').innerText = s.awayName;
-            document.getElementById('pts-h').innerText = s.homeScore;
-            document.getElementById('pts-a').innerText = s.awayScore;
-            document.getElementById('bg-h').style.backgroundColor = s.homeColor;
-            document.getElementById('bg-h').style.color = s.homeTextColor;
-            document.getElementById('bg-a').style.backgroundColor = s.awayColor;
-            document.getElementById('bg-a').style.color = s.awayTextColor;
-            document.getElementById('txt-tournament').innerText = s.tournamentName;
-            
-            // ... (incluir lógica de logos y renderHistory del código anterior)
-            if(s.homeLogo) { document.getElementById('logo-h').src = s.homeLogo; document.getElementById('logo-h').style.display='block'; }
-            else document.getElementById('logo-h').style.display='none';
-            if(s.awayLogo) { document.getElementById('logo-a').src = s.awayLogo; document.getElementById('logo-a').style.display='block'; }
-            else document.getElementById('logo-a').style.display='none';
-            renderHistory(s.homeSetsHistory, 'sets-h-row');
-            renderHistory(s.awaySetsHistory, 'sets-a-row');
+            document.getElementById('n-h').innerText = s.homeName; document.getElementById('n-a').innerText = s.awayName;
+            document.getElementById('p-h').innerText = s.homeScore; document.getElementById('p-a').innerText = s.awayScore;
+            document.getElementById('bg-h').style.cssText = `background:${s.homeColor}; color:${s.homeTextColor}`;
+            document.getElementById('bg-a').style.cssText = `background:${s.awayColor}; color:${s.awayTextColor}`;
+            document.getElementById('row-h').className = s.serverSide==='home'?'row serving':'row';
+            document.getElementById('row-a').className = s.serverSide==='away'?'row serving':'row';
+            document.getElementById('t-name').innerText = s.tournamentName;
+
+            if(s.homeLogo) { document.getElementById('l-h').src = s.homeLogo; document.getElementById('l-h').style.display='block'; }
+            else document.getElementById('l-h').style.display='none';
+            if(s.awayLogo) { document.getElementById('l-a').src = s.awayLogo; document.getElementById('l-a').style.display='block'; }
+            else document.getElementById('l-a').style.display='none';
+
+            drawH(s.homeSetsHistory, 'hist-h'); drawH(s.awaySetsHistory, 'hist-a');
         });
-
-        function triggerAnim(id) {
-            const el = document.getElementById(id);
-            el.classList.remove('animate-pop');
-            void el.offsetWidth; // Trigger reflow
-            el.classList.add('animate-pop');
-        }
 
         socket.on('tick', d => {
-            const m = Math.floor(d.timer/60).toString().padStart(2,'0');
-            const sec = (d.timer%60).toString().padStart(2,'0');
-            document.getElementById('timer').innerText = `${m}:${sec}`;
+            document.getElementById('timer').innerText = Math.floor(d.timer/60).toString().padStart(2,'0')+":"+(d.timer%60).toString().padStart(2,'0');
         });
 
-        function renderHistory(history, elementId) {
-            const container = document.getElementById(elementId);
-            container.innerHTML = '';
-            history.forEach(score => {
-                const div = document.createElement('div');
-                div.className = 'set-box';
-                div.innerText = score;
-                container.appendChild(div);
-            });
+        function anim(id) { const e = document.getElementById(id); e.classList.remove('animate-pop'); void e.offsetWidth; e.classList.add('animate-pop'); }
+        function drawH(h, id) {
+            const c = document.getElementById(id); c.innerHTML = '';
+            h.forEach(v => { const d = document.createElement('div'); d.className='set-box'; d.innerText=v; c.appendChild(d); });
         }
     </script>
 </body>
 </html>
+
