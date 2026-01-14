@@ -8,10 +8,9 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.use(express.static('public'));
 
 let state = {
-    tournamentName: 'VOLLEYBALL CHAMPIONSHIP',
+    tournamentName: 'TORNEO LINARES 2026',
     bgColorTitle: '#0b1422', textColorTitle: '#ffffff',
-    bgColorTimer: '#000000', broadcasterLogo: '', 
-    overlayMode: 'match',
+    bgColorTimer: '#000000', overlayMode: 'match',
     homeName: 'LOCAL', homeColor: '#00cba9', homeTextColor: '#ffffff', homeLogo: '',
     homeScore: 0, homeSets: 0, homeSetsHistory: [],
     awayName: 'VISITA', awayColor: '#a044ff', awayTextColor: '#ffffff', awayLogo: '',
@@ -40,11 +39,11 @@ io.on('connection', (socket) => {
         if (data.cmd === 'pause') state.isRunning = false;
         if (data.cmd === 'reset') { state.timer = 0; state.isRunning = false; }
         if (data.cmd === 'adjust') state.timer = Math.max(0, state.timer + data.val);
-        if (data.cmd === 'set') state.timer = data.val;
         if (data.cmd === 'mode') state.timerMode = data.val;
         io.emit('update', state);
     });
 });
 
-server.listen(3000, () => console.log("Servidor v6 Activo en Puerto 3000"));
+server.listen(3000, () => console.log("Sistema Multi-Escena v7 Online"));
+
 
