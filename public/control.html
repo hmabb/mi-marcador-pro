@@ -7,94 +7,80 @@
     <style>
         body { background: #0f172a; color: #f8fafc; font-size: 0.85rem; }
         .card { background: #1e293b; border: 1px solid #334155; margin-bottom: 10px; }
-        label { color: #60a5fa; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; }
-        .score-val { font-size: 3rem; font-weight: 900; line-height: 1; margin: 10px 0; }
-        .btn-timer { font-size: 0.75rem; padding: 5px; }
+        label { color: #60a5fa; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 3px; }
+        .score-val { font-size: 3rem; font-weight: 900; color: white; line-height: 1; }
+        .set-editor { background: #0f172a; padding: 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; border: 1px solid #334155; }
+        .set-editor input { width: 55px; text-align: center; background: #1e293b; color: gold; border: 1px solid #475569; font-weight: bold; }
     </style>
 </head>
 <body class="p-2">
 <div class="container-fluid">
     <div class="row g-2">
-        <div class="col-12 col-lg-3">
-            <div class="card p-3 shadow-sm">
-                <div class="h1 text-center font-monospace text-white" id="t-disp">00:00</div>
+        <div class="col-12 col-md-3">
+            <div class="card p-3 shadow">
+                <div class="h1 text-center font-monospace text-white mb-3" id="t-disp">00:00</div>
                 <div class="row g-1 mb-2">
                     <div class="col-6"><button class="btn btn-success w-100 btn-sm" onclick="sendT('start')">START</button></div>
                     <div class="col-6"><button class="btn btn-danger w-100 btn-sm" onclick="sendT('pause')">PAUSE</button></div>
                 </div>
-                <div class="d-flex justify-content-between gap-1 mb-2">
-                    <button class="btn btn-dark btn-timer flex-fill" onclick="sendT('adjust', 60)">+1m</button>
-                    <button class="btn btn-dark btn-timer flex-fill" onclick="sendT('adjust', 1)">+1s</button>
-                    <button class="btn btn-dark btn-timer flex-fill" onclick="sendT('adjust', -1)">-1s</button>
-                    <button class="btn btn-dark btn-timer flex-fill" onclick="sendT('adjust', -60)">-1m</button>
+                <div class="d-flex justify-content-between gap-1 mb-3">
+                    <button class="btn btn-dark btn-sm flex-fill" onclick="sendT('adjust', 60)">+1m</button>
+                    <button class="btn btn-dark btn-sm flex-fill" onclick="sendT('adjust', -60)">-1m</button>
+                    <button class="btn btn-primary btn-sm flex-fill" onclick="sendT('reset')">RST</button>
                 </div>
-                
-                <label>Seteo Manual (MM:SS)</label>
+                <label>Manual (MM:SS) / Modo</label>
                 <div class="input-group input-group-sm mb-2">
                     <input type="text" id="t-manual" class="form-control bg-dark text-white border-secondary" placeholder="00:00">
-                    <button class="btn btn-primary" onclick="setManualTime()">FIJAR</button>
+                    <button class="btn btn-primary" onclick="setManualTime()">SET</button>
                 </div>
-
-                <label>Modo de Conteo</label>
-                <select id="timerMode" class="form-select form-select-sm bg-dark text-white mb-3" onchange="syncTimerMode()">
-                    <option value="up">ASCENDENTE (0 -> MAX)</option>
-                    <option value="down">REGRESIVO (MAX -> 0)</option>
+                <select id="timerMode" class="form-select form-select-sm bg-dark text-white" onchange="syncTimerMode()">
+                    <option value="up">ASCENDENTE</option>
+                    <option value="down">REGRESIVO</option>
                 </select>
-
-                <hr class="border-secondary">
-                <label>Escena OBS</label>
-                <select id="overlayMode" class="form-select form-select-sm bg-info text-dark fw-bold mb-2" onchange="sync()">
-                    <option value="match">PARTIDO EN VIVO</option>
-                    <option value="halftime">ENTRETIEMPO</option>
-                    <option value="final">FINAL</option>
-                </select>
-                <input type="text" id="tournamentName" class="form-control form-control-sm bg-dark text-white" onchange="sync()">
             </div>
         </div>
 
-        <div class="col-12 col-lg-4">
+        <div class="col-12 col-md-4">
             <div class="card p-3 border-info">
-                <label>Equipo Local</label>
-                <input type="text" id="homeName" class="form-control form-control-sm mb-2 fw-bold" onchange="sync()">
-                <div class="row g-1 mb-3">
-                    <div class="col-3"><label>Fondo</label><input type="color" id="homeColor" class="form-control form-control-color w-100" onchange="sync()"></div>
-                    <div class="col-3"><label>Texto</label><input type="color" id="homeTextColor" class="form-control form-control-color w-100" onchange="sync()"></div>
-                    <div class="col-6"><label>Logo URL</label><input type="text" id="homeLogo" class="form-control form-control-sm bg-dark text-white" onchange="sync()"></div>
+                <input type="text" id="homeName" class="form-control form-control-sm mb-2 fw-bold" placeholder="NOMBRE LOCAL" onchange="sync()">
+                <div class="row g-1 mb-2">
+                    <div class="col-4"><label>Fondo</label><input type="color" id="homeColor" class="form-control form-control-color w-100" onchange="sync()"></div>
+                    <div class="col-4"><label>Texto</label><input type="color" id="homeTextColor" class="form-control form-control-color w-100" onchange="sync()"></div>
+                    <div class="col-4"><label>Sets</label><input type="number" id="homeSets" class="form-control form-control-sm bg-dark text-white" onchange="sync()"></div>
                 </div>
+                <input type="text" id="homeLogo" class="form-control form-control-sm bg-dark text-white mb-3" placeholder="URL LOGO" onchange="sync()">
                 <div class="text-center bg-black rounded p-3">
-                    <div class="score-val text-white" id="v-p-h">0</div>
-                    <button class="btn btn-primary w-100 py-3 mb-2 fw-bold" onclick="mod('homeScore',1)">+1 LOCAL</button>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-sm btn-outline-danger" onclick="mod('homeScore',-1)">-1</button>
-                        <span class="text-white">SETS: <b class="text-warning h5" id="v-s-h">0</b></span>
-                        <button class="btn btn-sm btn-success" onclick="mod('homeSets',1)">+1 SET</button>
-                    </div>
+                    <div class="score-val" id="v-p-h">0</div>
+                    <button class="btn btn-primary w-100 py-3 mb-2 fw-bold" onclick="mod('homeScore',1)">+1 PUNTO</button>
+                    <button class="btn btn-sm btn-outline-danger w-100" onclick="mod('homeScore',-1)">CORREGIR -1</button>
                 </div>
-                <button id="btn-srv-h" class="btn btn-outline-warning w-100 mt-2" onclick="setSrv('home')">🏐 SAQUE</button>
             </div>
         </div>
 
-        <div class="col-12 col-lg-4">
+        <div class="col-12 col-md-4">
             <div class="card p-3 border-primary">
-                <label>Equipo Visita</label>
-                <input type="text" id="awayName" class="form-control form-control-sm mb-2 fw-bold" onchange="sync()">
-                <div class="row g-1 mb-3">
-                    <div class="col-3"><label>Fondo</label><input type="color" id="awayColor" class="form-control form-control-color w-100" onchange="sync()"></div>
-                    <div class="col-3"><label>Texto</label><input type="color" id="awayTextColor" class="form-control form-control-color w-100" onchange="sync()"></div>
-                    <div class="col-6"><label>Logo URL</label><input type="text" id="awayLogo" class="form-control form-control-sm bg-dark text-white" onchange="sync()"></div>
+                <input type="text" id="awayName" class="form-control form-control-sm mb-2 fw-bold" placeholder="NOMBRE VISITA" onchange="sync()">
+                <div class="row g-1 mb-2">
+                    <div class="col-4"><label>Fondo</label><input type="color" id="awayColor" class="form-control form-control-color w-100" onchange="sync()"></div>
+                    <div class="col-4"><label>Texto</label><input type="color" id="awayTextColor" class="form-control form-control-color w-100" onchange="sync()"></div>
+                    <div class="col-4"><label>Sets</label><input type="number" id="awaySets" class="form-control form-control-sm bg-dark text-white" onchange="sync()"></div>
                 </div>
+                <input type="text" id="awayLogo" class="form-control form-control-sm bg-dark text-white mb-3" placeholder="URL LOGO" onchange="sync()">
                 <div class="text-center bg-black rounded p-3">
-                    <div class="score-val text-white" id="v-p-a">0</div>
-                    <button class="btn btn-primary w-100 py-3 mb-2 fw-bold" onclick="mod('awayScore',1)">+1 VISITA</button>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-sm btn-outline-danger" onclick="mod('awayScore',-1)">-1</button>
-                        <span class="text-white">SETS: <b class="text-warning h5" id="v-s-a">0</b></span>
-                        <button class="btn btn-sm btn-success" onclick="mod('awaySets',1)">+1 SET</button>
-                    </div>
+                    <div class="score-val" id="v-p-a">0</div>
+                    <button class="btn btn-primary w-100 py-3 mb-2 fw-bold" onclick="mod('awayScore',1)">+1 PUNTO</button>
+                    <button class="btn btn-sm btn-outline-danger w-100" onclick="mod('awayScore',-1)">CORREGIR -1</button>
                 </div>
-                <button id="btn-srv-a" class="btn btn-outline-warning w-100 mt-2" onclick="setSrv('away')">🏐 SAQUE</button>
             </div>
         </div>
+    </div>
+
+    <div class="card mt-2 p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="m-0 fw-bold text-info">GESTIÓN DE SETS FINALIZADOS</h6>
+            <button class="btn btn-warning btn-sm fw-bold" onclick="pushS()">💾 GUARDAR SET ACTUAL</button>
+        </div>
+        <div id="h-list" class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-2"></div>
     </div>
 </div>
 
@@ -102,7 +88,7 @@
 <script>
     const socket = io();
     let state = {};
-    const fields = ['tournamentName','overlayMode','homeName','homeColor','homeTextColor','homeLogo','awayName','awayColor','awayTextColor','awayLogo'];
+    const fields = ['tournamentName','homeName','homeColor','homeTextColor','homeLogo','homeSets','awayName','awayColor','awayTextColor','awayLogo','awaySets'];
 
     socket.on('init', s => { state = s; ui(); });
     socket.on('update', s => { state = s; ui(); });
@@ -112,30 +98,51 @@
         fields.forEach(f => { if(document.getElementById(f)) document.getElementById(f).value = state[f]; });
         document.getElementById('v-p-h').innerText = state.homeScore;
         document.getElementById('v-p-a').innerText = state.awayScore;
-        document.getElementById('v-s-h').innerText = state.homeSets;
-        document.getElementById('v-s-a').innerText = state.awaySets;
         document.getElementById('timerMode').value = state.timerMode;
+
+        let h = "";
+        state.homeSetsHistory.forEach((v, i) => {
+            h += `<div class="col"><div class="set-editor">
+                <span class="fw-bold text-white-50">S${i+1}</span>
+                <input type="number" value="${v}" onchange="editH(${i},'h',this.value)">
+                <input type="number" value="${state.awaySetsHistory[i]}" onchange="editH(${i},'a',this.value)">
+                <button class="btn btn-sm btn-danger py-0 px-2" onclick="delH(${i})">×</button>
+            </div></div>`;
+        });
+        document.getElementById('h-list').innerHTML = h;
     }
 
     function sync() {
         let d = {}; fields.forEach(f => { d[f] = document.getElementById(f).value; });
         socket.emit('updateAction', d);
     }
-    function syncTimerMode() { socket.emit('controlTimer', {cmd: 'mode', val: document.getElementById('timerMode').value}); }
-    function setManualTime() {
-        let parts = document.getElementById('t-manual').value.split(':');
-        if(parts.length === 2) {
-            let total = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-            socket.emit('controlTimer', {cmd: 'set', val: total});
-        }
+    function pushS() {
+        socket.emit('updateAction', {
+            homeSetsHistory: [...state.homeSetsHistory, state.homeScore],
+            awaySetsHistory: [...state.awaySetsHistory, state.awayScore],
+            homeScore: 0, awayScore: 0
+        });
+    }
+    function editH(i, t, v) {
+        let h = [...state.homeSetsHistory], a = [...state.awaySetsHistory];
+        t === 'h' ? h[i] = parseInt(v) : a[i] = parseInt(v);
+        socket.emit('updateAction', {homeSetsHistory: h, awaySetsHistory: a});
+    }
+    function delH(i) {
+        let h = [...state.homeSetsHistory], a = [...state.awaySetsHistory];
+        h.splice(i, 1); a.splice(i, 1);
+        socket.emit('updateAction', {homeSetsHistory: h, awaySetsHistory: a});
     }
     function mod(k,v) { let d={}; d[k]=Math.max(0, state[k]+v); socket.emit('updateAction', d); }
-    function setSrv(s) { socket.emit('updateAction', {serverSide: s}); }
+    function setManualTime() {
+        let p = document.getElementById('t-manual').value.split(':');
+        if(p.length === 2) socket.emit('controlTimer', {cmd:'set', val: parseInt(p[0])*60 + parseInt(p[1])});
+    }
+    function syncTimerMode() { socket.emit('controlTimer', {cmd:'mode', val: document.getElementById('timerMode').value}); }
     function sendT(cmd, val) { socket.emit('controlTimer', {cmd, val}); }
     function fmt(s) { return Math.floor(s/60).toString().padStart(2,'0')+":"+(s%60).toString().padStart(2,'0'); }
 </script>
 </body>
 </html>
-
 
 
