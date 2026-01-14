@@ -5,11 +5,14 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
+const ADMIN_PASSWORD = "TuClaveSegura123"; // CAMBIA ESTO
+
 app.use(express.static('public'));
 
 let state = {
     sport: 'volleyball',
     tournamentName: 'VOLLEYBALL CHAMPIONSHIP',
+    overlayMode: 'match', // match, halftime, final
     homeName: 'LOCAL',
     awayName: 'VISITA',
     homeColor: '#36ba98',
@@ -27,15 +30,12 @@ let state = {
     serverSide: 'none' 
 };
 
-// Variables para el cálculo de tiempo real (no volátil)
 let startTime = null;
 let accumulatedTime = 0;
 
 setInterval(() => {
     if (state.isRunning && startTime) {
-        // Calculamos la diferencia real entre "ahora" y "cuando empezamos"
-        const now = Date.now();
-        const elapsedMs = now - startTime + accumulatedTime;
+        const elapsedMs = Date.now() - startTime + accumulatedTime;
         state.timer = Math.floor(elapsedMs / 1000);
         io.emit('tick', { timer: state.timer });
     }
@@ -44,13 +44,17 @@ setInterval(() => {
 io.on('connection', (socket) => {
     socket.emit('init', state);
 
+    // Verificación de password simple para acciones
     socket.on('updateAction', (data) => {
-        const { timer, ...restOfData } = data; 
+        if (data.password !== ADMIN_PASSWORD) return socket.emit('error_auth');
+        const { timer, password, ...restOfData } = data; 
         state = { ...state, ...restOfData };
         io.emit('update', state);
     });
 
-    socket.on('controlTimer', (cmd) => {
+    socket.on('controlTimer', (data) => {
+        if (data.password !== ADMIN_PASSWORD) return;
+        const cmd = data.command;
         if (cmd === 'start' && !state.isRunning) {
             state.isRunning = true;
             startTime = Date.now();
@@ -70,4 +74,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
+server.listen(PORT, () => console.log(`Navaja Suiza de Streaming en puerto ${PORT}`));
