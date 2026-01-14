@@ -9,13 +9,10 @@ app.use(express.static('public'));
 
 let state = {
     tournamentName: 'VOLLEYBALL CHAMPIONSHIP',
-    bgColorTitle: '#0b1422',
-    textColorTitle: '#ffffff',
-    bgColorTimer: '#000000',
-    bgColorHist: '#1a2a44',
-    colorServeIndic: '#ffd700',
-    broadcasterLogo: '', 
-    overlayMode: 'match', // 'match', 'halftime', 'final'
+    bgColorTitle: '#0b1422', textColorTitle: '#ffffff',
+    bgColorTimer: '#000000', bgColorHist: '#1a2a44',
+    colorServeIndic: '#ffd700', broadcasterLogo: '', 
+    overlayMode: 'match',
     homeName: 'LOCAL', awayName: 'VISITA',
     homeColor: '#00cba9', awayColor: '#a044ff',
     homeTextColor: '#ffffff', awayTextColor: '#ffffff',
@@ -29,28 +26,20 @@ let state = {
 
 setInterval(() => {
     if (state.isRunning) {
-        if (state.timerMode === 'up') state.timer++;
-        else if (state.timer > 0) state.timer--;
-        else state.isRunning = false;
+        state.timerMode === 'up' ? state.timer++ : (state.timer > 0 ? state.timer-- : state.isRunning = false);
         io.emit('tick', { timer: state.timer });
     }
 }, 1000);
 
 io.on('connection', (socket) => {
     socket.emit('init', state);
-
     socket.on('updateAction', (data) => {
-        let oldHome = state.homeScore;
-        let oldAway = state.awayScore;
+        let oldH = state.homeScore, oldA = state.awayScore;
         state = { ...state, ...data };
-
-        // Lógica de Saque Automático: El que anota, saca.
-        if (state.homeScore > oldHome) state.serverSide = 'home';
-        if (state.awayScore > oldAway) state.serverSide = 'away';
-
+        if (state.homeScore > oldH) state.serverSide = 'home';
+        if (state.awayScore > oldA) state.serverSide = 'away';
         io.emit('update', state);
     });
-
     socket.on('controlTimer', (data) => {
         if (data.cmd === 'start') state.isRunning = true;
         if (data.cmd === 'pause') state.isRunning = false;
@@ -62,4 +51,4 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(process.env.PORT || 3000, () => console.log("Servidor Pro activo"));
+server.listen(3000, () => console.log("Servidor Navaja Suiza v3 Listo"));
