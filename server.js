@@ -41,4 +41,5 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(3000, () => console.log("Broadcast Server V9 - Ready"));
+server.listen(3000, () => console.log("Servidor V10 - Online"));
+
