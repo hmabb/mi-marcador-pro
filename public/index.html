@@ -1,307 +1,150 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&family=Roboto:wght@400;500;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&family=Roboto:wght@900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            /* Variables CSS que se actualizarán vía JS */
-            --bg-timer: #000000;
-            --bg-hist: #1a2a44;
-            --color-serve: #ffd700;
-            --bg-title: #0b1422;
-            --color-title: #ffffff;
-            --home-bg: #00cba9; --home-text: #ffffff;
-            --away-bg: #a044ff; --away-text: #ffffff;
+        :root { --home-bg: #00cba9; --away-bg: #a044ff; --title-bg: #0b1422; --timer-bg: #000; }
+        body { background: transparent; margin: 0; padding: 40px; font-family: 'Roboto Condensed', sans-serif; color: white; overflow: hidden; }
+
+        /* MARCADOR PRINCIPAL (Live Match) */
+        .live-score {
+            position: fixed; bottom: 50px; left: 50px;
+            display: flex; flex-direction: column; width: 450px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
+            transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.5s;
         }
 
-        body {
-            background: transparent;
-            margin: 0;
-            padding: 20px; /* Margen de seguridad para OBS */
-            font-family: 'Roboto Condensed', sans-serif;
-            display: flex;
-            justify-content: center; /* Centrado horizontal */
-            overflow: hidden;
-        }
-
-        /* --- CONTENEDOR PRINCIPAL (Limita el ancho y da la proporción) --- */
-        .scoreboard-container {
-            width: 850px; /* Ancho fijo para estilo TV barra inferior */
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            /* Transiciones suaves para banners */
-            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-            transform-origin: center bottom;
-        }
-
-        /* --- ESTRUCTURA DE FILAS DE EQUIPO (Imagen 0 Ref) --- */
-        .team-row {
-            display: flex;
-            height: 65px; /* Altura de la barra de equipo */
-        }
+        .team-row { display: flex; height: 50px; align-items: stretch; margin-bottom: 2px; }
+        .name-box { flex: 1; display: flex; align-items: center; padding: 0 15px; font-size: 24px; text-transform: uppercase; position: relative; }
+        .logo-img { height: 35px; width: 35px; object-fit: contain; margin-right: 12px; }
+        .pts-box { width: 70px; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 900; background: rgba(0,0,0,0.3); }
         
-        /* Sección Izquierda: Logo, Nombre, Saque */
-        .team-info-bar {
-            flex-grow: 1; /* Ocupa el espacio restante */
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            font-size: 28px; font-weight: 700; text-transform: uppercase;
-            position: relative;
-            clip-path: polygon(0 0, 100% 0, 97% 100%, 0% 100%); /* Pequeño ángulo al final */
-            z-index: 2;
-        }
-        .team-logo { height: 45px; width: 45px; object-fit: contain; margin-right: 15px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); }
-        
-        /* Indicador de Saque */
-        .serve-indicator {
-            font-family: 'Roboto', sans-serif;
-            position: absolute; right: 25px; font-size: 24px;
-            color: var(--color-serve);
-            opacity: 0; transition: opacity 0.3s ease-in-out;
-            filter: drop-shadow(0 0 8px var(--color-serve));
-        }
-        .serving .serve-indicator { opacity: 1; animation: pulseServe 1.5s infinite; }
-        @keyframes pulseServe { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
+        .footer-live { display: flex; height: 35px; background: var(--title-bg); align-items: center; border-top: 2px solid rgba(255,255,255,0.1); }
+        .timer-box { width: 100px; background: var(--timer-bg); height: 100%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-family: 'Roboto', monospace; position: relative; }
+        .tour-name-live { flex: 1; padding: 0 15px; font-size: 14px; letter-spacing: 1px; color: #ccc; }
 
-        /* Sección Derecha: Puntos Históricos y Actuales */
-        .scores-bar {
-            display: flex;
-            background: var(--bg-hist);
-            height: 100%;
-            margin-left: -15px; /* Superposición por el ángulo */
-            z-index: 1;
-            padding-left: 20px;
-        }
-        /* Celdas de sets previos */
-        .hist-cell {
-            width: 65px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; color: #aaa;
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }
-        /* Celda de puntos actuales (más grande y coloreada) */
-        .current-point-cell {
-            width: 90px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 42px; font-weight: 900;
-            /* El fondo y texto se aplican inline por JS */
-        }
+        /* SAQUE */
+        .ball { position: absolute; right: 10px; font-size: 18px; opacity: 0; transition: 0.3s; color: gold; }
+        .serving .ball { opacity: 1; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-        /* --- BARRA INFERIOR (Footer: Timer, Logo Transmisor, Título) --- */
-        .footer-bar {
-            height: 45px;
-            background: var(--bg-title);
-            display: flex;
-            align-items: stretch;
-            border-top: 2px solid rgba(255,255,255,0.1);
-        }
-        
-        /* Área del Cronómetro y Logo Transmisor */
-        .timer-area {
-            background: var(--bg-timer);
-            width: 140px;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Roboto', monospace; font-weight: 900; font-size: 26px; color: white;
-            position: relative;
-            clip-path: polygon(0 0, 90% 0, 100% 100%, 0% 100%);
-        }
-        /* Logo del transmisor "sobre el cronómetro" */
-        .broadcaster-logo-overlay {
-            position: absolute;
-            top: -35px; left: 10px; /* Posición flotante */
-            height: 30px;
-            background: rgba(0,0,0,0.7); padding: 2px 5px; border-radius: 4px;
-            display: none; /* Oculto si no hay URL */
-        }
-        .broadcaster-logo-overlay img { height: 100%; object-fit: contain; }
+        /* LOGO TRANSMISOR */
+        .bc-logo { position: absolute; top: -45px; left: 0; height: 35px; padding: 5px; background: rgba(0,0,0,0.5); border-radius: 5px; }
 
-        /* Área del Título del Torneo */
-        .title-area {
-            flex-grow: 1;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
-            color: var(--color-title);
-            margin-left: -20px; z-index: -1; padding-left: 30px;
+        /* BANNER ALARGADO (Halftime / Final) */
+        .tv-banner {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(200px);
+            width: 90%; max-width: 1200px; height: 100px;
+            background: rgba(11, 20, 34, 0.95); border-bottom: 5px solid gold;
+            display: flex; align-items: center; padding: 0 40px;
+            transition: transform 1s cubic-bezier(0.1, 0.9, 0.2, 1);
         }
+        .tv-banner.active { transform: translateX(-50%) translateY(0); }
 
+        .banner-team { display: flex; align-items: center; gap: 20px; flex: 1; }
+        .b-logo { height: 70px; width: 70px; object-fit: contain; }
+        .b-name { font-size: 40px; text-transform: uppercase; }
+        .b-score-large { font-size: 70px; font-weight: 900; color: gold; width: 120px; text-align: center; }
+        .b-sets-small { font-size: 20px; color: #aaa; margin-left: 10px; }
+        .vs-text { font-size: 30px; color: #555; margin: 0 30px; }
 
-        /* --- BANNERS (Entretiempo / Final) --- */
-        .overlay-banner {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(11, 20, 34, 0.95);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: white;
-            opacity: 0; visibility: hidden; transition: all 0.5s;
-            text-transform: uppercase;
-        }
-        .overlay-banner.active { opacity: 1; visibility: visible; }
-        /* Estados del marcador principal cuando hay banner */
-        .scoreboard-container.hidden { opacity: 0; transform: translateY(50px) scale(0.9); }
-
-        .banner-title { font-size: 60px; font-weight: 900; color: var(--color-serve); margin-bottom: 30px; }
-        .banner-score-row { display: flex; align-items: center; gap: 40px; font-size: 40px; }
-        .banner-team { display: flex; flex-direction: column; align-items: center; }
-        .banner-logo { width: 100px; height: 100px; object-fit: contain; margin-bottom: 10px; }
-        .banner-sets { font-size: 120px; font-weight: 900; line-height: 1; }
-        .banner-vs { font-size: 50px; color: #666; }
+        .hidden { transform: translateY(300px); opacity: 0; }
     </style>
 </head>
 <body>
 
-    <div class="scoreboard-container" id="mainBoard">
-        <div class="team-row">
-            <div class="team-info-bar" id="bar-h">
-                <img src="" class="team-logo" id="logo-h"><span id="name-h">USA</span>
-                <i class="serve-indicator bi bi-volleyball">🏐</i>
-            </div>
-            <div class="scores-bar">
-                <div id="hist-h" style="display: flex;"></div> <div class="current-point-cell" id="score-h">0</div>
-            </div>
+    <div id="live" class="live-score">
+        <div class="bc-logo" id="bc-wrap"><img id="bc-img" style="height:100%"></div>
+        <div class="team-row" id="row-h">
+            <div class="name-box" id="nb-h"><img id="l-h" class="logo-img"><span id="n-h"></span><span class="ball">🏐</span></div>
+            <div class="pts-box" id="p-h">0</div>
         </div>
-        <div class="team-row">
-            <div class="team-info-bar" id="bar-a">
-                <img src="" class="team-logo" id="logo-a"><span id="name-a">ENG</span>
-                <i class="serve-indicator bi bi-volleyball">🏐</i>
-            </div>
-            <div class="scores-bar">
-                <div id="hist-a" style="display: flex;"></div>
-                <div class="current-point-cell" id="score-a">0</div>
-            </div>
+        <div class="team-row" id="row-a">
+            <div class="name-box" id="nb-a"><img id="l-a" class="logo-img"><span id="n-a"></span><span class="ball">🏐</span></div>
+            <div class="pts-box" id="p-a">0</div>
         </div>
-        <div class="footer-bar">
-            <div class="timer-area">
-                <div class="broadcaster-logo-overlay" id="bc-logo-container">
-                    <img src="" id="bc-logo-img">
-                </div>
-                <span id="timer-display">00:00</span>
-            </div>
-            <div class="title-area">
-                <span id="tournament-title">VOLLEYBALL CHAMPIONSHIP</span>
-            </div>
+        <div class="footer-live">
+            <div class="timer-box" id="t-wrap"><span id="timer">00:00</span></div>
+            <div class="tour-name-live" id="tour-live"></div>
         </div>
     </div>
 
-    <div class="overlay-banner" id="overlayBanner">
-        <div class="banner-title" id="bannerTitle">ENTRETIEMPO</div>
-        <div class="banner-score-row">
-            <div class="banner-team">
-                <img src="" class="banner-logo" id="b-logo-h">
-                <span id="b-name-h">HOME</span>
-                <span class="banner-sets" style="color: var(--home-bg);" id="b-sets-h">2</span>
+    <div id="banner" class="tv-banner">
+        <div class="banner-team" style="justify-content: flex-end;">
+            <div style="text-align: right;">
+                <div class="b-name" id="bn-h"></div>
+                <div class="b-sets-small">SETS GANADOS: <span id="bs-h"></span></div>
             </div>
-            <div class="banner-vs">VS</div>
-            <div class="banner-team">
-                <img src="" class="banner-logo" id="b-logo-a">
-                <span id="b-name-a">AWAY</span>
-                <span class="banner-sets" style="color: var(--away-bg);" id="b-sets-a">1</span>
+            <img id="bl-h" class="b-logo">
+            <div class="b-score-large" id="bp-h"></div>
+        </div>
+        <div class="vs-text">VS</div>
+        <div class="banner-team">
+            <div class="b-score-large" id="bp-a"></div>
+            <img id="bl-a" class="b-logo">
+            <div>
+                <div class="b-name" id="bn-a"></div>
+                <div class="b-sets-small">SETS GANADOS: <span id="bs-a"></span></div>
             </div>
         </div>
-        <div style="margin-top: 30px; font-size: 24px; color: #aaa;" id="b-tour-title"></div>
     </div>
-
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const root = document.documentElement;
-
         socket.on('update', s => {
-            updateColors(s);
-            updateContent(s);
-            updateMode(s);
-        });
-
-        socket.on('tick', d => {
-            document.getElementById('timer-display').innerText = formatTimer(d.timer);
-        });
-
-        function updateMode(s) {
-            const board = document.getElementById('mainBoard');
-            const banner = document.getElementById('overlayBanner');
+            // Visibilidad
             if(s.overlayMode === 'match') {
-                board.classList.remove('hidden');
-                banner.classList.remove('active');
+                document.getElementById('live').classList.remove('hidden');
+                document.getElementById('banner').classList.remove('active');
             } else {
-                board.classList.add('hidden');
-                banner.classList.add('active');
-                // Actualizar datos del banner
-                document.getElementById('bannerTitle').innerText = s.overlayMode === 'halftime' ? 'ENTRETIEMPO' : 'RESULTADO FINAL';
-                document.getElementById('b-name-h').innerText = s.homeName; document.getElementById('b-name-a').innerText = s.awayName;
-                document.getElementById('b-sets-h').innerText = s.homeSets; document.getElementById('b-sets-a').innerText = s.awaySets;
-                document.getElementById('b-logo-h').src = s.homeLogo; document.getElementById('b-logo-a').src = s.awayLogo;
-                document.getElementById('b-tour-title').innerText = s.tournamentName;
+                document.getElementById('live').classList.add('hidden');
+                document.getElementById('banner').classList.add('active');
+                
+                // Data Banner
+                document.getElementById('bn-h').innerText = s.homeName;
+                document.getElementById('bn-a').innerText = s.awayName;
+                document.getElementById('bp-h').innerText = s.homeScore;
+                document.getElementById('bp-a').innerText = s.awayScore;
+                document.getElementById('bs-h').innerText = s.homeSets;
+                document.getElementById('bs-a').innerText = s.awaySets;
+                document.getElementById('bl-h').src = s.homeLogo;
+                document.getElementById('bl-a').src = s.awayLogo;
             }
-        }
 
-        function updateColors(s) {
-            // Actualizar variables CSS globales
-            root.style.setProperty('--bg-timer', s.bgColorTimer);
-            root.style.setProperty('--bg-hist', s.bgColorHist);
-            root.style.setProperty('--color-serve', s.colorServeIndic);
-            root.style.setProperty('--bg-title', s.bgColorTitle);
-            root.style.setProperty('--color-title', s.textColorTitle);
-            root.style.setProperty('--home-bg', s.homeColor); root.style.setProperty('--home-text', s.homeTextColor);
-            root.style.setProperty('--away-bg', s.awayColor); root.style.setProperty('--away-text', s.awayTextColor);
-
-            // Aplicar estilos específicos a las barras de equipo
-            document.getElementById('bar-h').style.background = s.homeColor; document.getElementById('bar-h').style.color = s.homeTextColor;
-            document.getElementById('score-h').style.background = s.homeColor; document.getElementById('score-h').style.color = s.homeTextColor;
+            // Marcador Live
+            document.getElementById('n-h').innerText = s.homeName;
+            document.getElementById('n-a').innerText = s.awayName;
+            document.getElementById('p-h').innerText = s.homeScore;
+            document.getElementById('p-a').innerText = s.awayScore;
+            document.getElementById('tour-live').innerText = s.tournamentName;
             
-            document.getElementById('bar-a').style.background = s.awayColor; document.getElementById('bar-a').style.color = s.awayTextColor;
-            document.getElementById('score-a').style.background = s.awayColor; document.getElementById('score-a').style.color = s.awayTextColor;
-        }
-
-        function updateContent(s) {
-            // Textos básicos
-            document.getElementById('name-h').innerText = s.homeName;
-            document.getElementById('name-a').innerText = s.awayName;
-            document.getElementById('score-h').innerText = s.homeScore;
-            document.getElementById('score-a').innerText = s.awayScore;
-            document.getElementById('tournament-title').innerText = s.tournamentName;
+            // Colores
+            document.getElementById('nb-h').style.background = s.homeColor;
+            document.getElementById('nb-h').style.color = s.homeTextColor;
+            document.getElementById('nb-a').style.background = s.awayColor;
+            document.getElementById('nb-a').style.color = s.awayTextColor;
+            document.querySelector('.footer-live').style.background = s.bgColorTitle;
+            document.getElementById('tour-live').style.color = s.textColorTitle;
+            document.getElementById('t-wrap').style.background = s.bgColorTimer;
+            
+            // Saque
+            document.getElementById('row-h').className = s.serverSide==='home'?'team-row serving':'team-row';
+            document.getElementById('row-a').className = s.serverSide==='away'?'team-row serving':'team-row';
 
             // Logos
-            setLogo('logo-h', s.homeLogo); setLogo('logo-a', s.awayLogo);
-
-            // Logo Transmisor (sobre el cronómetro)
-            const bcContainer = document.getElementById('bc-logo-container');
-            const bcImg = document.getElementById('bc-logo-img');
+            document.getElementById('l-h').src = s.homeLogo;
+            document.getElementById('l-a').src = s.awayLogo;
             if(s.broadcasterLogo) {
-                bcImg.src = s.broadcasterLogo; bcContainer.style.display = 'block';
-            } else { bcContainer.style.display = 'none'; }
+                document.getElementById('bc-img').src = s.broadcasterLogo;
+                document.getElementById('bc-wrap').style.display = 'block';
+            } else document.getElementById('bc-wrap').style.display = 'none';
 
-            // Indicador de Saque
-            document.getElementById('bar-h').classList.toggle('serving', s.serverSide === 'home');
-            document.getElementById('bar-a').classList.toggle('serving', s.serverSide === 'away');
+            if(!s.isRunning) document.getElementById('timer').innerText = fmt(s.timer);
+        });
 
-            // Historial
-            renderHist('hist-h', s.homeSetsHistory);
-            renderHist('hist-a', s.awaySetsHistory);
-            
-            if(!s.isRunning) document.getElementById('timer-display').innerText = formatTimer(s.timer);
-        }
-
-        function setLogo(id, url) {
-            const img = document.getElementById(id);
-            if(url) { img.src = url; img.style.display = 'inline'; } else { img.style.display = 'none'; }
-        }
-
-        function renderHist(containerId, historyData) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            historyData.forEach(val => {
-                const cell = document.createElement('div');
-                cell.className = 'hist-cell';
-                cell.innerText = val;
-                container.appendChild(cell);
-            });
-        }
-        function formatTimer(s) {
-             if (s < 0) s = 0;
-            return Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0');
-        }
+        socket.on('tick', d => { document.getElementById('timer').innerText = fmt(d.timer); });
+        function fmt(s) { return Math.floor(s/60).toString().padStart(2,'0')+":"+(s%60).toString().padStart(2,'0'); }
     </script>
 </body>
 </html>
