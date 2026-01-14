@@ -1,118 +1,82 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #121212; color: #eee; font-family: sans-serif; padding-bottom: 50px; }
-        .card { background: #1e1e1e; border: 1px solid #333; margin-bottom: 10px; }
-        .timer-val { font-family: monospace; font-size: 2.5rem; color: #00ffcc; text-align: center; }
-        .score-num { font-size: 2rem; font-weight: bold; }
-        label { font-size: 0.7rem; text-transform: uppercase; color: #888; }
+        body { background: #121212; color: #eee; font-size: 0.85rem; }
+        .card { background: #1e1e1e; border: 1px solid #333; margin-bottom: 8px; }
+        .score-box { background: #000; padding: 10px; border-radius: 8px; text-align: center; }
+        .set-edit-row { display: flex; gap: 5px; background: #2a2a2a; padding: 5px; border-radius: 5px; margin-bottom: 5px; align-items: center; }
+        .set-edit-row input { width: 50px; text-align: center; background: #000; color: #fff; border: 1px solid #444; }
     </style>
 </head>
 <body>
-<div class="container-fluid p-3">
+<div class="container-fluid p-2">
     <div class="row g-2">
-        <div class="col-md-4">
-            <div class="card p-3">
-                <div class="timer-val" id="t-disp">00:00</div>
-                <div class="btn-group w-100 mb-2">
+        <div class="col-md-3">
+            <div class="card p-2 text-center">
+                <div class="h3 text-info" id="t-disp">00:00</div>
+                <div class="btn-group btn-group-sm w-100 mb-2">
                     <button class="btn btn-success" onclick="sendT('start')">START</button>
-                    <button class="btn btn-warning" onclick="sendT('pause')">PAUSE</button>
                     <button class="btn btn-danger" onclick="sendT('reset')">RESET</button>
                 </div>
-                <div class="row g-1 mb-2">
-                    <div class="col-3"><button class="btn btn-sm btn-outline-info w-100" onclick="sendT('adjust', 60)">+60s</button></div>
-                    <div class="col-3"><button class="btn btn-sm btn-outline-info w-100" onclick="sendT('adjust', 1)">+1s</button></div>
-                    <div class="col-3"><button class="btn btn-sm btn-outline-info w-100" onclick="sendT('adjust', -1)">-1s</button></div>
-                    <div class="col-3"><button class="btn btn-sm btn-outline-info w-100" onclick="sendT('adjust', -60)">-60s</button></div>
-                </div>
-                <div class="input-group input-group-sm mb-2">
-                    <select id="t-mode" class="form-select bg-dark text-white" onchange="socket.emit('controlTimer', {cmd:'mode', val:this.value})">
-                        <option value="up">Creciente (UP)</option>
-                        <option value="down">Regresivo (DOWN)</option>
-                    </select>
-                    <input type="text" id="t-man" class="form-control bg-dark text-white text-center" placeholder="MM:SS">
-                    <button class="btn btn-primary" onclick="setMan()">SET</button>
-                </div>
-            </div>
-            <div class="card p-3">
-                <label>Modo Pantalla</label>
-                <select id="overlayMode" class="form-select bg-dark text-white mb-2" onchange="sync()">
-                    <option value="match">Partido en Vivo</option>
-                    <option value="halftime">Entretiempo</option>
-                    <option value="final">Final del Partido</option>
+                <select id="overlayMode" class="form-select form-select-sm bg-dark text-white mb-2" onchange="sync()">
+                    <option value="match">🔴 EN VIVO</option>
+                    <option value="halftime">⏸️ ENTRETIEMPO</option>
+                    <option value="final">🏁 FINAL</option>
                 </select>
-                <label>Campeonato</label>
-                <input type="text" id="tournamentName" class="form-control bg-dark text-white mb-2" onchange="sync()">
-                <div class="row g-1">
-                    <div class="col-6"><label>Color Fondo</label><input type="color" id="bgColorTitle" class="form-control p-0" onchange="sync()"></div>
-                    <div class="col-6"><label>Color Texto</label><input type="color" id="textColorTitle" class="form-control p-0" onchange="sync()"></div>
-                </div>
-                <label class="mt-2">Logo Transmisión (URL)</label>
-                <input type="text" id="broadcasterLogo" class="form-control bg-dark text-white" onchange="sync()">
+                <input type="text" id="tournamentName" class="form-control form-control-sm bg-dark text-white mb-2" placeholder="Torneo" onchange="sync()">
+                <div class="d-flex gap-1"><input type="color" id="bgColorTitle" onchange="sync()"><input type="color" id="textColorTitle" onchange="sync()"></div>
             </div>
         </div>
 
-        <div class="col-md-8">
-            <div class="row g-2">
-                <div class="col-6">
-                    <div class="card p-3 border-info">
-                        <input type="text" id="homeName" class="form-control bg-dark text-white mb-2 fw-bold" onchange="sync()">
-                        <div class="row g-1 mb-2">
-                            <div class="col-6"><input type="color" id="homeColor" class="form-control p-0" onchange="sync()"></div>
-                            <div class="col-6"><input type="color" id="homeTextColor" class="form-control p-0" onchange="sync()"></div>
+        <div class="col-md-4">
+            <div class="card p-2 border-info">
+                <input type="text" id="homeName" class="form-control form-control-sm bg-dark text-white mb-2" onchange="sync()">
+                <div class="score-box">
+                    <div class="h2" id="v-p-h">0</div>
+                    <div class="btn-group w-100 mb-2">
+                        <button class="btn btn-primary" onclick="mod('homeScore',1)">+1</button>
+                        <button class="btn btn-outline-danger" onclick="mod('homeScore',-1)">-1</button>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>SETS: <b class="text-warning" id="v-s-h">0</b></span>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-success" onclick="mod('homeSets',1)">+1 Set</button>
+                            <button class="btn btn-sm btn-danger" onclick="mod('homeSets',-1)">-1</button>
                         </div>
-                        <input type="text" id="homeLogo" class="form-control bg-dark text-white mb-2" placeholder="URL Logo" onchange="sync()">
-                        
-                        <div class="text-center bg-black p-2 rounded">
-                            <label>PUNTOS</label>
-                            <div class="score-num" id="v-p-h">0</div>
-                            <div class="btn-group w-100 mb-2">
-                                <button class="btn btn-primary" onclick="mod('homeScore',1)">+1</button>
-                                <button class="btn btn-outline-danger" onclick="mod('homeScore',-1)">-1</button>
-                            </div>
-                            <label>SETS</label>
-                            <div class="h5 text-warning" id="v-s-h">0</div>
-                            <div class="btn-group w-100">
-                                <button class="btn btn-sm btn-success" onclick="mod('homeSets',1)">+1 SET</button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="mod('homeSets',-1)">-1</button>
-                            </div>
-                        </div>
-                        <button id="btn-srv-h" class="btn btn-sm btn-outline-warning w-100 mt-2" onclick="setSrv('home')">🏐 SAQUE</button>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="card p-3 border-primary">
-                        <input type="text" id="awayName" class="form-control bg-dark text-white mb-2 fw-bold" onchange="sync()">
-                        <div class="row g-1 mb-2">
-                            <div class="col-6"><input type="color" id="awayColor" class="form-control p-0" onchange="sync()"></div>
-                            <div class="col-6"><input type="color" id="awayTextColor" class="form-control p-0" onchange="sync()"></div>
-                        </div>
-                        <input type="text" id="awayLogo" class="form-control bg-dark text-white mb-2" placeholder="URL Logo" onchange="sync()">
-
-                        <div class="text-center bg-black p-2 rounded">
-                            <label>PUNTOS</label>
-                            <div class="score-num" id="v-p-a">0</div>
-                            <div class="btn-group w-100 mb-2">
-                                <button class="btn btn-primary" onclick="mod('awayScore',1)">+1</button>
-                                <button class="btn btn-outline-danger" onclick="mod('awayScore',-1)">-1</button>
-                            </div>
-                            <label>SETS</label>
-                            <div class="h5 text-warning" id="v-s-a">0</div>
-                            <div class="btn-group w-100">
-                                <button class="btn btn-sm btn-success" onclick="mod('awaySets',1)">+1 SET</button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="mod('awaySets',-1)">-1</button>
-                            </div>
-                        </div>
-                        <button id="btn-srv-a" class="btn btn-sm btn-outline-warning w-100 mt-2" onclick="setSrv('away')">🏐 SAQUE</button>
-                    </div>
-                </div>
+                <button id="btn-srv-h" class="btn btn-sm btn-outline-warning w-100 mt-2" onclick="setSrv('home')">🏐 SAQUE</button>
             </div>
-            <button class="btn btn-warning w-100 mt-2 fw-bold" onclick="pushS()">FINALIZAR SET Y GUARDAR HISTORIAL</button>
-            <div id="h-list" class="mt-2 d-flex gap-2 overflow-auto"></div>
         </div>
+
+        <div class="col-md-4">
+            <div class="card p-2 border-primary">
+                <input type="text" id="awayName" class="form-control form-control-sm bg-dark text-white mb-2" onchange="sync()">
+                <div class="score-box">
+                    <div class="h2" id="v-p-a">0</div>
+                    <div class="btn-group w-100 mb-2">
+                        <button class="btn btn-primary" onclick="mod('awayScore',1)">+1</button>
+                        <button class="btn btn-outline-danger" onclick="mod('awayScore',-1)">-1</button>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>SETS: <b class="text-warning" id="v-s-a">0</b></span>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-success" onclick="mod('awaySets',1)">+1 Set</button>
+                            <button class="btn btn-sm btn-danger" onclick="mod('awaySets',-1)">-1</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="btn-srv-a" class="btn btn-sm btn-outline-warning w-100 mt-2" onclick="setSrv('away')">🏐 SAQUE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-2 p-2">
+        <button class="btn btn-warning fw-bold mb-2" onclick="pushS()">🏁 FINALIZAR SET ACTUAL (AUTO WINNER)</button>
+        <div id="h-list"></div>
     </div>
 </div>
 
@@ -120,47 +84,67 @@
 <script>
     const socket = io();
     let state = {};
-    const fields = ['tournamentName','bgColorTitle','textColorTitle','broadcasterLogo','overlayMode','homeName','homeColor','homeTextColor','homeLogo','awayName','awayColor','awayTextColor','awayLogo'];
+    const fields = ['tournamentName','bgColorTitle','textColorTitle','overlayMode','homeName','homeColor','homeTextColor','awayName','awayColor','awayTextColor'];
 
     socket.on('init', s => { state = s; ui(); });
     socket.on('update', s => { state = s; ui(); });
     socket.on('tick', d => { document.getElementById('t-disp').innerText = fmt(d.timer); });
 
     function ui() {
-        fields.forEach(f => document.getElementById(f).value = state[f]);
+        fields.forEach(f => { if(document.getElementById(f)) document.getElementById(f).value = state[f]; });
         document.getElementById('v-p-h').innerText = state.homeScore;
         document.getElementById('v-p-a').innerText = state.awayScore;
         document.getElementById('v-s-h').innerText = state.homeSets;
         document.getElementById('v-s-a').innerText = state.awaySets;
-        document.getElementById('t-mode').value = state.timerMode;
-        document.getElementById('btn-srv-h').className = state.serverSide==='home'?'btn btn-sm btn-warning w-100 mt-2':'btn btn-sm btn-outline-warning w-100 mt-2';
-        document.getElementById('btn-srv-a').className = state.serverSide==='away'?'btn btn-sm btn-warning w-100 mt-2':'btn btn-sm btn-outline-warning w-100 mt-2';
         
         let h = "";
         state.homeSetsHistory.forEach((v, i) => {
-            h += `<div class="bg-dark p-1 rounded border border-secondary text-center" style="min-width:60px">
-                <small>S${i+1}</small><br><b>${v}-${state.awaySetsHistory[i]}</b>
+            h += `<div class="set-edit-row">
+                <span class="me-2 text-muted small">SET ${i+1}</span>
+                <input type="number" value="${v}" onchange="editH(${i},'h',this.value)">
+                <span class="text-muted">-</span>
+                <input type="number" value="${state.awaySetsHistory[i]}" onchange="editH(${i},'a',this.value)">
+                <button class="btn btn-sm btn-danger ms-auto" onclick="delH(${i})">×</button>
             </div>`;
         });
         document.getElementById('h-list').innerHTML = h;
     }
 
     function sync() {
-        let d = {}; fields.forEach(f => d[f] = document.getElementById(f).value);
+        let d = {}; fields.forEach(f => { if(document.getElementById(f)) d[f] = document.getElementById(f).value; });
         socket.emit('updateAction', d);
     }
-    function mod(k,v) { let d = {}; d[k] = Math.max(0, state[k]+v); socket.emit('updateAction', d); }
+
+    function pushS() {
+        let hSets = state.homeSets;
+        let aSets = state.awaySets;
+        // Lógica automática de ganador de set
+        if(state.homeScore > state.awayScore) hSets++;
+        else if(state.awayScore > state.homeScore) aSets++;
+
+        socket.emit('updateAction', {
+            homeSetsHistory: [...state.homeSetsHistory, state.homeScore],
+            awaySetsHistory: [...state.awaySetsHistory, state.awayScore],
+            homeScore: 0, awayScore: 0,
+            homeSets: hSets, awaySets: aSets
+        });
+    }
+
+    function editH(i, t, v) {
+        let h = [...state.homeSetsHistory], a = [...state.awaySetsHistory];
+        t === 'h' ? h[i] = parseInt(v) : a[i] = parseInt(v);
+        socket.emit('updateAction', {homeSetsHistory: h, awaySetsHistory: a});
+    }
+
+    function delH(i) {
+        let h = [...state.homeSetsHistory], a = [...state.awaySetsHistory];
+        h.splice(i, 1); a.splice(i, 1);
+        socket.emit('updateAction', {homeSetsHistory: h, awaySetsHistory: a});
+    }
+
+    function mod(k,v) { let d={}; d[k]=Math.max(0, state[k]+v); socket.emit('updateAction', d); }
     function setSrv(s) { socket.emit('updateAction', {serverSide: s}); }
     function sendT(cmd, val) { socket.emit('controlTimer', {cmd, val}); }
-    function setMan() {
-        let p = document.getElementById('t-man').value.split(':');
-        if(p.length===2) sendT('set', parseInt(p[0])*60 + parseInt(p[1]));
-    }
-    function pushS() {
-        let hsh = [...state.homeSetsHistory, state.homeScore];
-        let ash = [...state.awaySetsHistory, state.awayScore];
-        socket.emit('updateAction', {homeSetsHistory:hsh, awaySetsHistory:ash, homeScore:0, awayScore:0});
-    }
     function fmt(s) { return Math.floor(s/60).toString().padStart(2,'0')+":"+(s%60).toString().padStart(2,'0'); }
 </script>
 </body>
