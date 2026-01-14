@@ -3,84 +3,133 @@
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
     <style>
-        body { background: transparent; margin: 0; padding: 20px; font-family: 'Roboto', sans-serif; color: white; text-transform: uppercase; overflow: hidden; }
-        .board { display: flex; flex-direction: column; width: fit-content; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.6)); }
+        body { background: transparent; margin: 0; padding: 40px; font-family: 'Roboto', sans-serif; overflow: hidden; }
+        
+        /* Animación para números */
+        @keyframes pop {
+            0% { transform: scale(1.2); color: #f1c40f; }
+            100% { transform: scale(1); }
+        }
+        .animate-pop { animation: pop 0.4s ease-out; }
+
+        /* Contenedores con transición suave */
+        .board { 
+            display: flex; flex-direction: column; width: fit-content; 
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0; transform: translateY(-20px);
+        }
+        .board.visible { opacity: 1; transform: translateY(0); }
+
+        /* Estilos de Banners */
+        .banner-overlay {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(11, 20, 34, 0.95); border: 4px solid gold;
+            padding: 40px; text-align: center; color: white; border-radius: 20px;
+            opacity: 0; visibility: hidden; transition: all 0.5s; width: 600px;
+        }
+        .banner-overlay.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+
+        /* (Mantener estilos anteriores de .row, .info, .set-box, etc.) */
+        /* ... copio solo los necesarios para brevedad ... */
         .row { display: flex; height: 55px; margin-bottom: 2px; align-items: center; }
-        .info { flex: 1; min-width: 320px; display: flex; align-items: center; padding: 0 20px; font-size: 24px; transition: 0.4s; position: relative; }
-        .logo { width: 38px; height: 38px; margin-right: 15px; object-fit: contain; }
+        .info { flex: 1; min-width: 320px; display: flex; align-items: center; padding: 0 20px; font-size: 24px; color: white; text-transform: uppercase;}
         .sets-area { display: flex; background: #0b1422; height: 100%; }
         .set-box { width: 55px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-left: 1px solid rgba(255,255,255,0.1); color: #bbb; }
         .current { width: 75px; background: #1a2a44; color: #fff; font-size: 34px; font-weight: bold; border-left: 2px solid rgba(255,255,255,0.2); }
-        .footer { background: #0b1422; height: 38px; display: flex; align-items: center; padding: 0 20px; font-size: 16px; border-top: 1px solid #333; justify-content: space-between; }
-        
-        /* Icono de Saque */
-        .ball-icon { font-size: 20px; margin-left: auto; display: none; filter: drop-shadow(0 0 5px gold); }
-        .serving .ball-icon { display: block; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .footer { background: #0b1422; height: 38px; display: flex; align-items: center; padding: 0 20px; font-size: 16px; border-top: 1px solid #333; justify-content: space-between; color: white; text-transform: uppercase;}
+        .logo { width: 38px; height: 38px; margin-right: 15px; object-fit: contain; }
     </style>
 </head>
 <body>
-    <div class="board">
-        <div class="row" id="row-h">
-            <div class="info" id="bg-h">
-                <img id="logo-h" class="logo">
-                <span id="txt-h"></span>
-                <span class="ball-icon">🏐</span>
-            </div>
+
+    <div id="main-board" class="board visible">
+        <div class="row">
+            <div class="info" id="bg-h"><img id="logo-h" class="logo"><span id="txt-h"></span></div>
             <div class="sets-area" id="sets-h-row"></div>
-            <div class="set-box current" id="pts-h">0</div>
+            <div id="pts-h" class="set-box current">0</div>
         </div>
-        <div class="row" id="row-a">
-            <div class="info" id="bg-a">
-                <img id="logo-a" class="logo">
-                <span id="txt-a"></span>
-                <span class="ball-icon">🏐</span>
-            </div>
+        <div class="row">
+            <div class="info" id="bg-a"><img id="logo-a" class="logo"><span id="txt-a"></span></div>
             <div class="sets-area" id="sets-a-row"></div>
-            <div class="set-box current" id="pts-a">0</div>
+            <div id="pts-a" class="set-box current">0</div>
         </div>
         <div class="footer">
             <span id="txt-tournament"></span>
-            <span id="timer" style="font-family: monospace; font-size: 20px;">00:00</span>
+            <span id="timer">00:00</span>
         </div>
+    </div>
+
+    <div id="banner" class="banner-overlay">
+        <h1 id="banner-title" style="color: gold; margin-top:0;">ENTRETIEMPO</h1>
+        <div style="display: flex; justify-content: space-around; font-size: 40px; margin: 20px 0;">
+            <div><div id="b-name-h"></div><div id="b-score-h" style="font-size: 80px;">0</div></div>
+            <div style="align-self: center;">VS</div>
+            <div><div id="b-name-a"></div><div id="b-score-a" style="font-size: 80px;">0</div></div>
+        </div>
+        <h2 id="b-tournament"></h2>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let currentScores = { h: 0, a: 0 };
+
         socket.on('update', s => {
-            document.getElementById('txt-tournament').innerText = s.tournamentName;
+            // Manejo de Modos de Pantalla
+            const board = document.getElementById('main-board');
+            const banner = document.getElementById('banner');
+            
+            if(s.overlayMode === 'match') {
+                board.classList.add('visible');
+                banner.classList.remove('active');
+            } else {
+                board.classList.remove('visible');
+                banner.classList.add('active');
+                document.getElementById('banner-title').innerText = s.overlayMode === 'halftime' ? 'ENTRETIEMPO' : 'FIN DEL PARTIDO';
+                document.getElementById('b-name-h').innerText = s.homeName;
+                document.getElementById('b-name-a').innerText = s.awayName;
+                document.getElementById('b-score-h').innerText = s.homeScore;
+                document.getElementById('b-score-a').innerText = s.awayScore;
+                document.getElementById('b-tournament').innerText = s.tournamentName;
+            }
+
+            // Animación de puntos si cambian
+            if(s.homeScore !== currentScores.h) triggerAnim('pts-h');
+            if(s.awayScore !== currentScores.a) triggerAnim('pts-a');
+            currentScores = { h: s.homeScore, a: s.awayScore };
+
+            // Renderizado normal (colores, logos, nombres...)
             document.getElementById('txt-h').innerText = s.homeName;
             document.getElementById('txt-a').innerText = s.awayName;
-            
-            // Colores y Saque Local
-            const infoH = document.getElementById('bg-h');
-            infoH.style.backgroundColor = s.homeColor;
-            infoH.style.color = s.homeTextColor;
-            document.getElementById('row-h').className = (s.serverSide === 'home') ? 'row serving' : 'row';
-
-            // Colores y Saque Visita
-            const infoA = document.getElementById('bg-a');
-            infoA.style.backgroundColor = s.awayColor;
-            infoA.style.color = s.awayTextColor;
-            document.getElementById('row-a').className = (s.serverSide === 'away') ? 'row serving' : 'row';
-
             document.getElementById('pts-h').innerText = s.homeScore;
             document.getElementById('pts-a').innerText = s.awayScore;
+            document.getElementById('bg-h').style.backgroundColor = s.homeColor;
+            document.getElementById('bg-h').style.color = s.homeTextColor;
+            document.getElementById('bg-a').style.backgroundColor = s.awayColor;
+            document.getElementById('bg-a').style.color = s.awayTextColor;
+            document.getElementById('txt-tournament').innerText = s.tournamentName;
             
-            // Logos
-            const imgH = document.getElementById('logo-h');
-            if(s.homeLogo) { imgH.src = s.homeLogo; imgH.style.display='block'; } else imgH.style.display='none';
-            
-            const imgA = document.getElementById('logo-a');
-            if(s.awayLogo) { imgA.src = s.awayLogo; imgA.style.display='block'; } else imgA.style.display='none';
-
+            // ... (incluir lógica de logos y renderHistory del código anterior)
+            if(s.homeLogo) { document.getElementById('logo-h').src = s.homeLogo; document.getElementById('logo-h').style.display='block'; }
+            else document.getElementById('logo-h').style.display='none';
+            if(s.awayLogo) { document.getElementById('logo-a').src = s.awayLogo; document.getElementById('logo-a').style.display='block'; }
+            else document.getElementById('logo-a').style.display='none';
             renderHistory(s.homeSetsHistory, 'sets-h-row');
             renderHistory(s.awaySetsHistory, 'sets-a-row');
-            if(!s.isRunning) document.getElementById('timer').innerText = format(s.timer);
         });
 
-        socket.on('tick', d => document.getElementById('timer').innerText = format(d.timer));
+        function triggerAnim(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('animate-pop');
+            void el.offsetWidth; // Trigger reflow
+            el.classList.add('animate-pop');
+        }
+
+        socket.on('tick', d => {
+            const m = Math.floor(d.timer/60).toString().padStart(2,'0');
+            const sec = (d.timer%60).toString().padStart(2,'0');
+            document.getElementById('timer').innerText = `${m}:${sec}`;
+        });
 
         function renderHistory(history, elementId) {
             const container = document.getElementById(elementId);
@@ -92,7 +141,6 @@
                 container.appendChild(div);
             });
         }
-        function format(s) { return Math.floor(s/60).toString().padStart(2,'0') + ":" + (s%60).toString().padStart(2,'0'); }
     </script>
 </body>
 </html>
