@@ -8,24 +8,18 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.use(express.static('public'));
 
 let state = {
-    tournamentName: 'TORNEO LINARES 2026',
+    tournamentName: 'COPA LINARES 2026',
     bgColorTitle: '#0b1422', textColorTitle: '#ffffff',
-    bgColorTimer: '#000000', overlayMode: 'match',
     homeName: 'LOCAL', homeColor: '#00cba9', homeTextColor: '#ffffff', homeLogo: '',
     homeScore: 0, homeSets: 0, homeSetsHistory: [],
     awayName: 'VISITA', awayColor: '#a044ff', awayTextColor: '#ffffff', awayLogo: '',
     awayScore: 0, awaySets: 0, awaySetsHistory: [],
-    serverSide: 'none', timer: 0, isRunning: false, timerMode: 'up' // 'up' o 'down'
+    serverSide: 'none', timer: 0, isRunning: false, timerMode: 'up'
 };
 
 setInterval(() => {
     if (state.isRunning) {
-        if (state.timerMode === 'up') {
-            state.timer++;
-        } else {
-            if (state.timer > 0) state.timer--;
-            else state.isRunning = false;
-        }
+        state.timerMode === 'up' ? state.timer++ : (state.timer > 0 ? state.timer-- : state.isRunning = false);
         io.emit('tick', { timer: state.timer });
     }
 }, 1000);
@@ -47,4 +41,4 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(3000, () => console.log("Servidor V8 - Full Control Online"));
+server.listen(3000, () => console.log("Broadcast Server V9 - Ready"));
