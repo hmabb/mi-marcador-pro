@@ -3,44 +3,44 @@
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
     <style>
-        body { background: transparent; margin: 0; display: flex; justify-content: center; align-items: flex-end; height: 100vh; font-family: 'Roboto', sans-serif; overflow: hidden; padding-bottom: 50px; }
+        body { background: transparent; margin: 0; display: flex; justify-content: center; align-items: flex-end; height: 100vh; font-family: 'Roboto', sans-serif; overflow: hidden; padding-bottom: 80px; }
         .banner {
-            width: 85%; max-width: 1100px; height: 120px; background: #0b1422; 
+            width: 90%; max-width: 1200px; height: 130px; background: rgba(11, 20, 34, 0.95); 
             display: flex; align-items: center; position: relative; color: white;
-            transition: 0.8s cubic-bezier(0.1, 0.9, 0.2, 1); transform: translateY(300px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8); border-radius: 4px;
+            transition: 0.8s cubic-bezier(0.1, 0.9, 0.2, 1); transform: translateY(400px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.9); border-radius: 8px;
         }
         .banner.active { transform: translateY(0); }
         
-        /* BARRAS DE COLOR DINAMICO */
-        .color-bar-h { position: absolute; bottom: 0; left: 0; width: 50%; height: 8px; transition: 0.5s; }
-        .color-bar-a { position: absolute; bottom: 0; right: 0; width: 50%; height: 8px; transition: 0.5s; }
+        .color-bar { position: absolute; bottom: 0; height: 10px; transition: 0.5s; }
+        #cb-h { left: 0; width: 50%; border-radius: 0 0 0 8px; }
+        #cb-a { right: 0; width: 50%; border-radius: 0 0 8px 0; }
 
-        .tag { position: absolute; top: -35px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 4px 30px; font-weight: 900; font-size: 18px; clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%); }
+        .tag { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 6px 40px; font-weight: 900; font-size: 22px; clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%); }
         
-        .team { flex: 1; display: flex; align-items: center; gap: 20px; padding: 0 40px; }
-        .score { font-size: 80px; font-weight: 900; color: gold; width: 120px; text-align: center; }
-        .sets { font-size: 20px; color: #888; text-transform: uppercase; }
-        .name { font-size: 40px; text-transform: uppercase; }
-        .logo { height: 80px; width: 80px; object-fit: contain; }
+        .team { flex: 1; display: flex; align-items: center; gap: 20px; padding: 0 50px; }
+        .name { font-size: 45px; text-transform: uppercase; font-weight: 900; text-shadow: 3px 3px 0px rgba(0,0,0,0.5); }
+        .score { font-size: 90px; font-weight: 900; color: #fff; width: 140px; text-align: center; background: rgba(0,0,0,0.3); height: 100%; display: flex; align-items: center; justify-content: center; }
+        .sets { font-size: 22px; color: gold; font-weight: bold; }
+        .logo { height: 90px; width: 90px; object-fit: contain; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); }
     </style>
 </head>
 <body>
     <div id="ban" class="banner">
         <div id="tag" class="tag">ENTRETIEMPO</div>
-        <div class="color-bar-h" id="cb-h"></div>
-        <div class="color-bar-a" id="cb-a"></div>
+        <div class="color-bar" id="cb-h"></div>
+        <div class="color-bar" id="cb-a"></div>
 
         <div class="team" style="justify-content: flex-end; text-align: right;">
-            <div><div class="name" id="bn-h"></div><div class="sets">SETS: <span id="bs-h">0</span></div></div>
+            <div><div class="name" id="bn-h"></div><div class="sets">SETS GANADOS: <span id="bs-h">0</span></div></div>
             <img id="bl-h" class="logo">
         </div>
         <div class="score" id="bp-h">0</div>
-        <div style="font-size: 30px; color: #444;">VS</div>
+        <div style="font-size: 40px; color: gold; padding: 0 20px;">VS</div>
         <div class="score" id="bp-a">0</div>
         <div class="team">
             <img id="bl-a" class="logo">
-            <div><div class="name" id="bn-a"></div><div class="sets">SETS: <span id="bs-a">0</span></div></div>
+            <div><div class="name" id="bn-a"></div><div class="sets">SETS GANADOS: <span id="bs-a">0</span></div></div>
         </div>
     </div>
 
@@ -52,9 +52,8 @@
             document.getElementById('ban').classList.toggle('active', isBanner);
             document.getElementById('tag').innerText = s.overlayMode === 'halftime' ? 'ENTRETIEMPO' : 'FINAL';
             
-            // Datos
-            document.getElementById('bn-h').innerText = s.homeName;
-            document.getElementById('bn-a').innerText = s.awayName;
+            document.getElementById('bn-h').innerText = s.homeName; document.getElementById('bn-h').style.color = s.homeColor;
+            document.getElementById('bn-a').innerText = s.awayName; document.getElementById('bn-a').style.color = s.awayColor;
             document.getElementById('bp-h').innerText = s.homeScore;
             document.getElementById('bp-a').innerText = s.awayScore;
             document.getElementById('bs-h').innerText = s.homeSets;
@@ -62,7 +61,6 @@
             document.getElementById('bl-h').src = s.homeLogo;
             document.getElementById('bl-a').src = s.awayLogo;
 
-            // BARRAS DE COLOR DEL EQUIPO
             document.getElementById('cb-h').style.background = s.homeColor;
             document.getElementById('cb-a').style.background = s.awayColor;
         });
