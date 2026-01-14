@@ -8,7 +8,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 app.use(express.static('public'));
 
 let state = {
-    tournamentName: 'COPA DE CAMPEONES 2026',
+    tournamentName: 'VOLLEYBALL CHAMPIONSHIP',
     bgColorTitle: '#0b1422', textColorTitle: '#ffffff',
     bgColorTimer: '#000000', broadcasterLogo: '', 
     overlayMode: 'match',
@@ -46,4 +46,5 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(3000, () => console.log("Servidor Broadcast V5 Harry <3 - Online"));
+server.listen(3000, () => console.log("Servidor v6 Activo en Puerto 3000"));
+
