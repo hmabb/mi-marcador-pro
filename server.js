@@ -15,12 +15,17 @@ let state = {
     homeScore: 0, homeSets: 0, homeSetsHistory: [],
     awayName: 'VISITA', awayColor: '#a044ff', awayTextColor: '#ffffff', awayLogo: '',
     awayScore: 0, awaySets: 0, awaySetsHistory: [],
-    serverSide: 'none', timer: 0, isRunning: false, timerMode: 'up'
+    serverSide: 'none', timer: 0, isRunning: false, timerMode: 'up' // 'up' o 'down'
 };
 
 setInterval(() => {
     if (state.isRunning) {
-        state.timerMode === 'up' ? state.timer++ : (state.timer > 0 ? state.timer-- : state.isRunning = false);
+        if (state.timerMode === 'up') {
+            state.timer++;
+        } else {
+            if (state.timer > 0) state.timer--;
+            else state.isRunning = false;
+        }
         io.emit('tick', { timer: state.timer });
     }
 }, 1000);
@@ -28,10 +33,7 @@ setInterval(() => {
 io.on('connection', (socket) => {
     socket.emit('init', state);
     socket.on('updateAction', (data) => {
-        let oldH = state.homeScore, oldA = state.awayScore;
         state = { ...state, ...data };
-        if (state.homeScore > oldH) state.serverSide = 'home';
-        if (state.awayScore > oldA) state.serverSide = 'away';
         io.emit('update', state);
     });
     socket.on('controlTimer', (data) => {
@@ -39,11 +41,10 @@ io.on('connection', (socket) => {
         if (data.cmd === 'pause') state.isRunning = false;
         if (data.cmd === 'reset') { state.timer = 0; state.isRunning = false; }
         if (data.cmd === 'adjust') state.timer = Math.max(0, state.timer + data.val);
+        if (data.cmd === 'set') state.timer = data.val;
         if (data.cmd === 'mode') state.timerMode = data.val;
         io.emit('update', state);
     });
 });
 
-server.listen(3000, () => console.log("Sistema Multi-Escena v7 Online"));
-
-
+server.listen(3000, () => console.log("Servidor V8 - Full Control Online"));
