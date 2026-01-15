@@ -25,7 +25,7 @@ setInterval(() => {
 }, 1000);
 
 // NUEVA SECCIÓN: API para Stream Deck
-app.get('/api/:action/:value', (req, res) => {
+app.get('/api/:action/:value?', (req, res) => {
     const { action, value } = req.params;
 
     if (action === 'homeScore') state.homeScore = Math.max(0, state.homeScore + parseInt(value));
@@ -68,5 +68,6 @@ io.on('connection', (socket) => {
 });
 
 server.listen(3000, () => console.log("Servidor V10 - Online"));
+
 
 
