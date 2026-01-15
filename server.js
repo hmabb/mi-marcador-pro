@@ -67,7 +67,13 @@ io.on('connection', (socket) => {
     });
 });
 
+// Endpoint para que Companion lea todo el estado de una vez
+app.get('/api/state', (req, res) => {
+    res.json(state);
+});
+
 server.listen(3000, () => console.log("Servidor V10 - Online"));
+
 
 
 
