@@ -72,7 +72,13 @@ app.get('/api/state', (req, res) => {
     res.json(state);
 });
 
+// Rutas de texto plano para botones que no saben leer JSON
+app.get('/api/view/homeScore', (req, res) => res.send(state.homeScore.toString()));
+app.get('/api/view/awayScore', (req, res) => res.send(state.awayScore.toString()));
+
+
 server.listen(3000, () => console.log("Servidor V10 - Online"));
+
 
 
 
